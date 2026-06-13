@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: mafia-server
+    runtime: node
+    plan: free
+    buildCommand: cd server && npm install && npx prisma generate && npx prisma db push --accept-data-loss
+    startCommand: cd server && npm start
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CLIENT_URL
+        value: https://mafia-client.onrender.com
+      - key: NODE_ENV
+        value: production
+
+  - type: web
+    name: mafia-client
+    runtime: static
+    plan: free
+    buildCommand: cd client && npm install && npm run build
+    staticPublishPath: ./client/dist
+    envVars:
+      - key: NODE_ENV
+        value: production
