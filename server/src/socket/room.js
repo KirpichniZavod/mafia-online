@@ -71,17 +71,40 @@ function roomHandler(io, socket, prisma) {
         return callback({ error: 'Room not found' });
       }
 
+      const alreadyJoined = room.players.some(p => p.userId === socket.user.id);
+
+      if (alreadyJoined) {
+        socket.join(`room:${room.id}`);
+
+        const roomData = activeRooms.get(room.id) || { players: [], host: room.hostId };
+        if (!roomData.players.includes(socket.user.id)) {
+          roomData.players.push(socket.user.id);
+        }
+        activeRooms.set(room.id, roomData);
+
+        const players = await prisma.player.findMany({
+          where: { roomId: room.id },
+          include: { user: { select: { id: true, nickname: true } } }
+        });
+
+        io.to(`room:${room.id}`).emit('room-updated', {
+          roomId: room.id,
+          players: players.map(p => ({
+            id: p.user.id,
+            nickname: p.user.nickname,
+            isHost: p.userId === room.hostId
+          }))
+        });
+
+        return callback({ success: true });
+      }
+
       if (room.status !== 'waiting') {
         return callback({ error: 'Game already started' });
       }
 
       if (room.players.length >= room.maxPlayers) {
         return callback({ error: 'Room is full' });
-      }
-
-      const alreadyJoined = room.players.some(p => p.userId === socket.user.id);
-      if (alreadyJoined) {
-        return callback({ error: 'Already in room' });
       }
 
       await prisma.player.create({
