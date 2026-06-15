@@ -6,6 +6,7 @@ import Lobby from './pages/Lobby';
 import Game from './pages/Game';
 import Profile from './pages/Profile';
 import Privacy from './pages/Privacy';
+import Admin from './pages/Admin';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -65,6 +66,7 @@ function App() {
             </div>
             {user ? (
               <>
+                {user.isAdmin && <Link to="/admin" className="nav-link" style={{ color: 'var(--accent-glow)' }}>👑 Админ</Link>}
                 <Link to="/profile" className="nav-link">{user.nickname}</Link>
                 <Link to="/lobby" className="nav-link">Лобби</Link>
                 <button className="btn btn-secondary btn-small" onClick={handleLogout}>
@@ -121,6 +123,13 @@ function App() {
               }
             />
             <Route path="/privacy" element={<Privacy />} />
+            <Route
+              path="/admin"
+              element={
+                user?.isAdmin ? <Admin user={user} token={token} /> :
+                <Navigate to="/login" />
+              }
+            />
           </Routes>
         </main>
 
