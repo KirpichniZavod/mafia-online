@@ -89,11 +89,13 @@ router.post('/login', async (req, res) => {
           data: { isBanned: false, banReason: null, banUntil: null }
         });
       } else {
-        const banInfo = user.banReason
-          ? `Account is banned: ${user.banReason}${user.banUntil ? ` (until ${new Date(user.banUntil).toLocaleString('ru-RU')})` : ' (permanent)'}`
-          : 'Account is banned';
         log.auth.banned(login, ip);
-        return res.status(403).json({ error: banInfo });
+        return res.status(403).json({
+          error: 'banned',
+          banned: true,
+          reason: user.banReason || null,
+          until: user.banUntil ? user.banUntil.toISOString() : null
+        });
       }
     }
 

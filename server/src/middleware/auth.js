@@ -27,10 +27,12 @@ async function authMiddleware(req, res, next) {
             data: { isBanned: false, banReason: null, banUntil: null }
           });
         } else {
-          const banInfo = user.banReason
-            ? `${user.banReason}${user.banUntil ? ` (до ${new Date(user.banUntil).toLocaleString('ru-RU')})` : ' (навсегда)'}`
-            : 'Аккаунт заблокирован';
-          return res.status(403).json({ error: banInfo });
+          return res.status(403).json({
+            error: 'banned',
+            banned: true,
+            reason: user.banReason || null,
+            until: user.banUntil ? user.banUntil.toISOString() : null
+          });
         }
       }
     }

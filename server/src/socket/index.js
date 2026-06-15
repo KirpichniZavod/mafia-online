@@ -31,9 +31,8 @@ function socketHandler(io) {
             data: { isBanned: false, banReason: null, banUntil: null }
           });
         } else {
-          const reason = user.banReason || 'Аккаунт заблокирован';
-          log.log('socket', log.ICONS.warn, 'BANNED USER BLOCKED: ' + decoded.nickname + ' — ' + reason);
-          return next(new Error(reason));
+          log.log('socket', log.ICONS.warn, 'BANNED USER BLOCKED: ' + decoded.nickname);
+          return next(new Error(JSON.stringify({ banned: true, reason: user.banReason, until: user.banUntil })));
         }
       }
 

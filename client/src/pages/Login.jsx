@@ -1,17 +1,20 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import config from '../config';
+import Banned from './Banned';
 
 function Login({ onLogin }) {
   const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [banInfo, setBanInfo] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
+    setBanInfo(null);
 
     try {
       const response = await fetch(`${config.serverUrl}/api/auth/login`, {
@@ -21,6 +24,14 @@ function Login({ onLogin }) {
       });
 
       const data = await response.json();
+
+      if (response.status === 403 && data.banned) {
+        setBanInfo({
+          reason: data.reason,
+          until: data.until
+        });
+        return;
+      }
 
       if (!response.ok) {
         throw new Error(data.error || 'Login failed');
@@ -34,13 +45,17 @@ function Login({ onLogin }) {
     }
   };
 
+  if (banInfo) {
+    return <Banned reason={banInfo.reason} until={banInfo.until} />;
+  }
+
   return (
     <div className="flex-center" style={{ minHeight: '60vh' }}>
       <div className="card" style={{ width: '100%', maxWidth: '400px' }}>
         <h2 className="text-center mb-2">Вход в аккаунт</h2>
-        
+
         {error && <div className="error">{error}</div>}
-        
+
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label className="form-label">Логин</label>
@@ -52,7 +67,7 @@ function Login({ onLogin }) {
               required
             />
           </div>
-          
+
           <div className="form-group">
             <label className="form-label">Пароль</label>
             <input
@@ -63,17 +78,17 @@ function Login({ onLogin }) {
               required
             />
           </div>
-          
-          <button 
-            type="submit" 
-            className="btn btn-primary" 
+
+          <button
+            type="submit"
+            className="btn btn-primary"
             style={{ width: '100%' }}
             disabled={loading}
           >
             {loading ? 'Вход...' : 'Войти'}
           </button>
         </form>
-        
+
         <p className="text-center mt-2" style={{ color: 'var(--text-secondary)' }}>
           Нет аккаунта? <Link to="/register" style={{ color: 'var(--accent-secondary)' }}>Зарегистрироваться</Link>
         </p>
