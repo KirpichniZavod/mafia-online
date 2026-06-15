@@ -1,0 +1,38 @@
+https://mafia-server-eljy.onrender.com сервер.
+https://mafia-online-lxgk.onrender.com клиент.
+
+логи: 2026-06-15T17:54:37.732208932Z ==> Deploying...
+2026-06-15T17:54:37.788693251Z ==> Setting WEB_CONCURRENCY=1 by default, based on available CPUs in the instance
+2026-06-15T17:54:51.992150753Z ==> Running 'node src/index.js'
+2026-06-15T17:54:54.397172099Z Database connected
+2026-06-15T17:54:55.195103452Z Admin account created: Anubis69 / AnubisTheGod
+2026-06-15T17:54:55.19646224Z Server running on port 10000
+2026-06-15T17:54:58.84457614Z ==> Your service is live 🎉
+2026-06-15T17:54:58.988863744Z ==> 
+2026-06-15T17:54:58.991801998Z ==> ///////////////////////////////////////////////////////////
+2026-06-15T17:54:58.994638779Z ==> 
+2026-06-15T17:54:58.997648154Z ==> Available at your primary URL https://mafia-server-eljy.onrender.com
+2026-06-15T17:54:59.000204699Z ==> 
+2026-06-15T17:54:59.00257563Z ==> ///////////////////////////////////////////////////////////
+2026-06-15T17:59:59.819389021Z ==> Deploying...
+2026-06-15T17:59:59.868235688Z ==> Setting WEB_CONCURRENCY=1 by default, based on available CPUs in the instance
+2026-06-15T18:00:08.839222774Z ==> Running 'node src/index.js'
+2026-06-15T18:00:11.006773645Z Database connected
+2026-06-15T18:00:11.054398607Z Server running on port 10000
+2026-06-15T18:00:39.933406493Z ==> Deploying...
+2026-06-15T18:00:39.999665085Z ==> Setting WEB_CONCURRENCY=1 by default, based on available CPUs in the instance
+2026-06-15T18:00:49.085936165Z ==> Running 'node src/index.js'
+2026-06-15T18:00:51.189964335Z Database connected
+2026-06-15T18:00:51.197544957Z Server running on port 10000
+2026-06-15T18:01:01.403683662Z ==> Your service is live 🎉
+2026-06-15T18:01:01.577545983Z ==> 
+2026-06-15T18:01:01.582159782Z ==> ///////////////////////////////////////////////////////////
+2026-06-15T18:01:01.586900383Z ==> 
+2026-06-15T18:01:01.595448176Z ==> Available at your primary URL https://mafia-server-eljy.onrender.com
+2026-06-15T18:01:01.601917444Z ==> 
+2026-06-15T18:01:01.611665283Z ==> ///////////////////////////////////////////////////////////
+2026-06-15T18:05:58.745526377Z ==> Detected service running on port 10000
+2026-06-15T18:05:58.87536176Z ==> Docs on specifying a port: https://render.com/docs/web-services#port-binding
+2026-06-15T18:28:25.326314646Z ==> Running 'node src/index.js'
+2026-06-15T18:28:27.649790224Z Database connected
+2026-06-15T18:28:27.736599656Z Server running on port 10000

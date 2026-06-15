@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import config from '../config';
 
 function Register({ onLogin }) {
   const [nickname, setNickname] = useState('');
@@ -30,7 +31,7 @@ function Register({ onLogin }) {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/auth/register', {
+      const response = await fetch(`${config.serverUrl}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nickname, login, password })
