@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
 import GameChat from '../components/Chat/GameChat';
@@ -8,6 +8,7 @@ function Game({ user, token }) {
   const { roomId } = useParams();
   const navigate = useNavigate();
   const [socket, setSocket] = useState(null);
+  const [connected, setConnected] = useState(false);
   const [players, setPlayers] = useState([]);
   const [role, setRole] = useState(null);
   const [isAlive, setIsAlive] = useState(true);
@@ -17,28 +18,27 @@ function Game({ user, token }) {
   const [error, setError] = useState('');
   const [selectedTarget, setSelectedTarget] = useState(null);
   const [gameResult, setGameResult] = useState(null);
+  const socketRef = useRef(null);
 
   useEffect(() => {
     const newSocket = io(config.serverUrl, {
-      auth: { token }
+      auth: { token },
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000
     });
 
     newSocket.on('connect', () => {
-      newSocket.emit('join-room', { roomId: parseInt(roomId) }, (response) => {
-        if (response.error) {
-          setError(response.error);
-        }
-      });
-
+      setConnected(true);
       newSocket.emit('get-role', { roomId: parseInt(roomId) }, (response) => {
-        if (response.role) {
+        if (response && response.role) {
           setRole(response.role);
           setIsAlive(response.isAlive);
         }
       });
 
       newSocket.emit('get-players', { roomId: parseInt(roomId) }, (response) => {
-        if (response.players) {
+        if (response && response.players) {
           setPlayers(response.players);
           const me = response.players.find(p => p.id === user.id);
           if (me) {
@@ -46,6 +46,11 @@ function Game({ user, token }) {
           }
         }
       });
+    });
+
+    newSocket.on('connect_error', (err) => {
+      setError('Ошибка подключения к серверу: ' + err.message);
+      setConnected(false);
     });
 
     newSocket.on('room-updated', (data) => {
@@ -59,13 +64,13 @@ function Game({ user, token }) {
     newSocket.on('game-started', () => {
       setPhase('night');
       newSocket.emit('get-role', { roomId: parseInt(roomId) }, (response) => {
-        if (response.role) {
+        if (response && response.role) {
           setRole(response.role);
           setIsAlive(response.isAlive);
         }
       });
       newSocket.emit('get-players', { roomId: parseInt(roomId) }, (response) => {
-        if (response.players) {
+        if (response && response.players) {
           setPlayers(response.players);
         }
       });
@@ -76,7 +81,7 @@ function Game({ user, token }) {
       setDayNumber(data.dayNumber);
       setSelectedTarget(null);
       newSocket.emit('get-players', { roomId: parseInt(roomId) }, (response) => {
-        if (response.players) {
+        if (response && response.players) {
           setPlayers(response.players);
         }
       });
@@ -102,12 +107,16 @@ function Game({ user, token }) {
       setPhase('ended');
     });
 
+    socketRef.current = newSocket;
     setSocket(newSocket);
 
-    return () => newSocket.disconnect();
+    return () => {
+      newSocket.disconnect();
+    };
   }, [token, roomId, user.id]);
 
   const handleStartGame = () => {
+    if (!socket) return;
     socket.emit('start-game', { roomId: parseInt(roomId) }, (response) => {
       if (response.error) {
         setError(response.error);
@@ -116,12 +125,17 @@ function Game({ user, token }) {
   };
 
   const handleLeaveRoom = () => {
-    socket.emit('leave-room', { roomId: parseInt(roomId) }, () => {
+    if (socket) {
+      socket.emit('leave-room', { roomId: parseInt(roomId) }, () => {
+        navigate('/lobby');
+      });
+    } else {
       navigate('/lobby');
-    });
+    }
   };
 
   const handleMafiaKill = (targetId) => {
+    if (!socket) return;
     socket.emit('mafia-kill', { roomId: parseInt(roomId), targetId }, (response) => {
       if (response.error) {
         setError(response.error);
@@ -130,6 +144,7 @@ function Game({ user, token }) {
   };
 
   const handleCommissionerCheck = (targetId) => {
+    if (!socket) return;
     socket.emit('commissioner-check', { roomId: parseInt(roomId), targetId }, (response) => {
       if (response.error) {
         setError(response.error);
@@ -138,6 +153,7 @@ function Game({ user, token }) {
   };
 
   const handleDoctorHeal = (targetId) => {
+    if (!socket) return;
     socket.emit('doctor-heal', { roomId: parseInt(roomId), targetId }, (response) => {
       if (response.error) {
         setError(response.error);
@@ -146,6 +162,7 @@ function Game({ user, token }) {
   };
 
   const handleVote = (targetId) => {
+    if (!socket) return;
     socket.emit('day-vote', { roomId: parseInt(roomId), targetId }, (response) => {
       if (response.error) {
         setError(response.error);
@@ -271,17 +288,17 @@ function Game({ user, token }) {
     if (!gameResult) return null;
 
     return (
-      <div className="card mt-2" style={{ 
-        background: gameResult.winner === 'town' 
-          ? 'rgba(46, 204, 113, 0.2)' 
-          : 'rgba(231, 76, 60, 0.2)' 
+      <div className="card mt-2" style={{
+        background: gameResult.winner === 'town'
+          ? 'rgba(46, 204, 113, 0.2)'
+          : 'rgba(231, 76, 60, 0.2)'
       }}>
         <h2 className="text-center mb-2">
           {gameResult.winner === 'town' ? 'Мирные победили!' : 'Мафия победила!'}
         </h2>
         <div className="grid">
           {gameResult.players.map(player => (
-            <div 
+            <div
               key={player.id}
               className="card"
               style={{
@@ -291,7 +308,7 @@ function Game({ user, token }) {
             >
               <div className="flex-between">
                 <span>{player.nickname}</span>
-                <span style={{ 
+                <span style={{
                   color: player.role === 'mafia' ? 'var(--danger)' :
                          player.role === 'commissioner' ? 'var(--warning)' :
                          player.role === 'doctor' ? 'var(--success)' : 'var(--text-primary)'
@@ -307,6 +324,17 @@ function Game({ user, token }) {
       </div>
     );
   };
+
+  if (!connected) {
+    return (
+      <div className="flex-center" style={{ minHeight: '60vh' }}>
+        <div className="card text-center">
+          <h2>Подключение к серверу...</h2>
+          {error && <p className="error mt-1">{error}</p>}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -325,15 +353,15 @@ function Game({ user, token }) {
             <h2 className="mb-2">Игроки ({players.filter(p => p.isAlive !== false).length})</h2>
             <div className="grid">
               {players.map((player) => (
-                <div 
+                <div
                   key={player.id}
                   className="card"
-                  style={{ 
+                  style={{
                     padding: '0.75rem',
-                    background: player.id === user.id 
-                      ? 'rgba(107, 63, 160, 0.3)' 
-                      : !player.isAlive 
-                        ? 'rgba(231, 76, 60, 0.2)' 
+                    background: player.id === user.id
+                      ? 'rgba(107, 63, 160, 0.3)'
+                      : !player.isAlive
+                        ? 'rgba(231, 76, 60, 0.2)'
                         : 'rgba(13, 6, 24, 0.5)',
                     opacity: player.isAlive ? 1 : 0.6
                   }}
@@ -348,7 +376,7 @@ function Game({ user, token }) {
           </div>
 
           {phase === 'waiting' && isHost && players.length >= 5 && (
-            <button 
+            <button
               className="btn btn-primary"
               onClick={handleStartGame}
               style={{ width: '100%' }}
@@ -396,8 +424,8 @@ function Game({ user, token }) {
       {role && phase !== 'waiting' && (
         <div className="card mt-2">
           <p>
-            Ваша роль: <strong style={{ 
-              color: role === 'mafia' ? 'var(--danger)' : 
+            Ваша роль: <strong style={{
+              color: role === 'mafia' ? 'var(--danger)' :
                      role === 'commissioner' ? 'var(--warning)' :
                      role === 'doctor' ? 'var(--success)' : 'var(--text-primary)'
             }}>
