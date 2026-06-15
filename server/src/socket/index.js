@@ -48,6 +48,23 @@ function socketHandler(io) {
 
     socket.on('disconnect', (reason) => {
       log.socketDisconnect(socket, reason);
+
+      for (const [roomId, game] of games.entries()) {
+        if (game.phase === 'night' || game.phase === 'day') {
+          const playerInGame = prisma.player.findFirst({
+            where: { userId: parseInt(socket.user.id), roomId, isAlive: true }
+          });
+          if (playerInGame) {
+            const discKey = `${roomId}-${socket.user.id}`;
+            const timer = setTimeout(() => {
+              games.get(roomId)?.disconnectedPlayers?.delete(discKey);
+              log.log('game', log.ICONS.warn, socket.user.nickname + ' disconnected timeout in room #' + roomId);
+            }, 60000);
+            games.get(roomId).disconnectedPlayers = games.get(roomId).disconnectedPlayers || new Map();
+            games.get(roomId).disconnectedPlayers.set(discKey, { timer, userId: socket.user.id });
+          }
+        }
+      }
     });
 
     socket.on('join-socket-room', (data) => {

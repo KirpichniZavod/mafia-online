@@ -117,4 +117,35 @@ router.get('/stats', async (req, res) => {
   }
 });
 
+router.get('/history', async (req, res) => {
+  try {
+    const games = await prisma.gameHistory.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 20
+    });
+    res.json(games);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.get('/leaderboard', async (req, res) => {
+  try {
+    const users = await prisma.user.findMany({
+      where: { gamesPlayed: { gte: 5 } },
+      select: { id: true, nickname: true, wins: true, losses: true, gamesPlayed: true, avatar: true },
+      orderBy: { wins: 'desc' },
+      take: 20
+    });
+    const leaderboard = users.map(u => ({
+      ...u,
+      winRate: Math.round((u.wins / u.gamesPlayed) * 100),
+      rating: u.wins * 2 - u.losses + Math.floor(u.gamesPlayed * 0.1)
+    })).sort((a, b) => b.rating - a.rating);
+    res.json(leaderboard);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 module.exports = router;

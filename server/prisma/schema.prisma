@@ -49,3 +49,12 @@ model Player {
 
   @@unique([userId, roomId])
 }
+
+model GameHistory {
+  id        Int      @id @default(autoincrement())
+  roomId    Int
+  winner    String
+  players   String
+  duration  Int
+  createdAt DateTime @default(now())
+}

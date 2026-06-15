@@ -8,11 +8,16 @@ import Profile from './pages/Profile';
 import Privacy from './pages/Privacy';
 import Rules from './pages/Rules';
 import Admin from './pages/Admin';
+import Banned from './pages/Banned';
+import History from './pages/History';
+import Leaderboard from './pages/Leaderboard';
+import config from './config';
 
 function App() {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
+  const [banInfo, setBanInfo] = useState(null);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -25,6 +30,17 @@ function App() {
       if (savedUser) {
         setUser(JSON.parse(savedUser));
       }
+      fetch(`${config.serverUrl}/api/profile/me`, {
+        headers: { Authorization: `Bearer ${token}` }
+      }).then(r => {
+        if (r.status === 403) {
+          r.json().then(data => {
+            if (data.banned) {
+              setBanInfo({ reason: data.reason, until: data.until });
+            }
+          });
+        }
+      }).catch(() => {});
     }
   }, [token]);
 
@@ -38,9 +54,14 @@ function App() {
   const handleLogout = () => {
     setUser(null);
     setToken(null);
+    setBanInfo(null);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
   };
+
+  if (banInfo) {
+    return <Banned reason={banInfo.reason} until={banInfo.until} />;
+  }
 
   return (
     <Router>
@@ -68,6 +89,8 @@ function App() {
             {user ? (
               <>
                 {user.isAdmin && <Link to="/admin" className="nav-link" style={{ color: 'var(--accent-glow)' }}>👑 Админ</Link>}
+                <Link to="/leaderboard" className="nav-link">🏆</Link>
+                <Link to="/history" className="nav-link">📜</Link>
                 <Link to="/profile" className="nav-link">{user.nickname}</Link>
                 <Link to="/lobby" className="nav-link">Лобби</Link>
                 <button className="btn btn-secondary btn-small" onClick={handleLogout}>
@@ -125,6 +148,8 @@ function App() {
             />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/rules" element={<Rules />} />
+            <Route path="/history" element={user ? <History token={token} /> : <Navigate to="/login" />} />
+            <Route path="/leaderboard" element={<Leaderboard />} />
             <Route
               path="/admin"
               element={

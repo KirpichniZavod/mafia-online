@@ -88,6 +88,7 @@ function roomHandler(io, socket, db) {
         const playerList = players.map(p => ({
           id: p.user.id,
           nickname: p.user.nickname,
+          avatar: p.user.avatar,
           isHost: p.userId === room.hostId
         }));
 
@@ -123,6 +124,7 @@ function roomHandler(io, socket, db) {
       const playerList = players.map(p => ({
         id: p.user.id,
         nickname: p.user.nickname,
+        avatar: p.user.avatar,
         isHost: p.userId === room.hostId
       }));
 
@@ -169,6 +171,7 @@ function roomHandler(io, socket, db) {
           const playerList = players.map(p => ({
             id: p.user.id,
             nickname: p.user.nickname,
+            avatar: p.user.avatar,
             isHost: p.userId === rd.host
           }));
           io.to('room:' + roomId).emit('room-updated', { roomId: roomId, players: playerList });

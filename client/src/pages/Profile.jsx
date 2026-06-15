@@ -87,7 +87,7 @@ function Profile({ user, token, onThemeChange }) {
               <h2>{profile.nickname}</h2>
               <p style={{ color: 'var(--text-secondary)' }}>Логин: {profile.login}</p>
               <p style={{ color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                Зарегистрирован: {new Date(profile.createdAt).toLocaleDateString('ru-RU')}
+                Зарегистрирован: {profile.createdAt ? new Date(profile.createdAt).toLocaleDateString('ru-RU') : '—'}
               </p>
             </div>
           </div>

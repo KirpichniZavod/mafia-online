@@ -4,10 +4,12 @@ const log = require('../logger');
 const prisma = new PrismaClient();
 
 const games = new Map();
+const disconnectedPlayers = new Map();
 
 const NIGHT_TIMEOUT = 60000;
 const DAY_TIMEOUT = 120000;
 const RESULT_DELAY = 5000;
+const RECONNECT_TIMEOUT = 60000;
 
 function gameHandler(io, socket, prisma) {
   const uid = () => parseInt(uid());
@@ -109,6 +111,40 @@ function gameHandler(io, socket, prisma) {
           role: p.role,
           isAlive: p.isAlive
         }))
+      });
+    } catch (error) {
+      callback({ error: 'Failed' });
+    }
+  });
+
+  socket.on('reconnect-game', async (data, callback) => {
+    try {
+      const rid = parseInt(data.roomId);
+      const game = games.get(rid);
+      if (!game) return callback({ error: 'Game not found' });
+
+      const player = await prisma.player.findFirst({
+        where: { userId: uid(), roomId: rid },
+        include: { user: { select: { id: true, nickname: true, avatar: true } } }
+      });
+      if (!player) return callback({ error: 'Not in game' });
+
+      socket.join('room:' + rid);
+
+      const discKey = `${rid}-${uid()}`;
+      if (disconnectedPlayers.has(discKey)) {
+        clearTimeout(disconnectedPlayers.get(discKey).timer);
+        disconnectedPlayers.delete(discKey);
+        log.log('game', log.ICONS.success, player.user.nickname + ' reconnected to room #' + rid);
+      }
+
+      callback({
+        success: true,
+        phase: game.phase,
+        dayNumber: game.dayNumber,
+        role: player.role,
+        isAlive: player.isAlive,
+        timeLeft: Math.max(0, Math.ceil((game.startTime + (game.phase === 'night' ? NIGHT_TIMEOUT : DAY_TIMEOUT) - Date.now()) / 1000))
       });
     } catch (error) {
       callback({ error: 'Failed' });
@@ -551,6 +587,25 @@ async function endGame(io, roomId, winner, players) {
       isAlive: p.isAlive
     }))
   });
+
+  try {
+    const room = await prisma.room.findUnique({ where: { id: roomId } });
+    await prisma.gameHistory.create({
+      data: {
+        roomId,
+        winner,
+        players: JSON.stringify(players.map(p => ({
+          id: p.user.id,
+          nickname: p.user.nickname,
+          role: p.role,
+          isAlive: p.isAlive
+        }))),
+        duration: game ? Math.floor((Date.now() - game.startTime) / 1000) : 0
+      }
+    });
+  } catch (e) {
+    log.log('game', log.ICONS.error, 'Failed to save game history: ' + e.message);
+  }
 }
 
 function assignRoles(playerCount, room) {

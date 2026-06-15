@@ -24,6 +24,8 @@ function Game({ user, token }) {
   const [voteResult, setVoteResult] = useState(null);
   const [lastCheck, setLastCheck] = useState(null);
   const [hasStarted, setHasStarted] = useState(false);
+  const [reconnecting, setReconnecting] = useState(false);
+  const [reconnectTimer, setReconnectTimer] = useState(0);
 
   useEffect(() => {
     const newSocket = io(config.serverUrl, {
@@ -35,6 +37,8 @@ function Game({ user, token }) {
 
     newSocket.on('connect', () => {
       setConnected(true);
+      setReconnectTimer(0);
+      setReconnecting(false);
       newSocket.emit('join-room', { roomId: parseInt(roomId) }, () => {});
       newSocket.emit('get-role', { roomId: parseInt(roomId) }, (res) => {
         if (res && res.role) {
@@ -47,6 +51,15 @@ function Game({ user, token }) {
           setPlayers(res.players);
           const me = res.players.find(p => p.id === user.id);
           if (me) setIsHost(me.isHost);
+        }
+      });
+      newSocket.emit('reconnect-game', { roomId: parseInt(roomId) }, (res) => {
+        if (res && res.success) {
+          setPhase(res.phase);
+          setDayNumber(res.dayNumber);
+          setRole(res.role);
+          setIsAlive(res.isAlive);
+          if (res.timeLeft > 0) setTimeLeft(res.timeLeft);
         }
       });
     });
@@ -185,12 +198,16 @@ function Game({ user, token }) {
   const renderRoleInfo = () => {
     if (!role || phase === 'waiting' || phase === 'ended') return null;
 
-    const roleNames = { mafia: 'Мафия', commissioner: 'Комиссар', doctor: 'Врач', civilian: 'Мирный' };
+    const roleNames = { mafia: 'Мафия', commissioner: 'Шериф', doctor: 'Врач', civilian: 'Мирный' };
     const roleColors = { mafia: 'var(--danger)', commissioner: 'var(--warning)', doctor: 'var(--success)', civilian: 'var(--text-primary)' };
+    const roleIcons = { mafia: '🗡️', commissioner: '🔍', doctor: '💊', civilian: '👤' };
 
     return (
-      <div className="card mt-2">
-        <p>Ваша роль: <strong style={{ color: roleColors[role] }}>{roleNames[role]}</strong></p>
+      <div className="card mt-2 animate-slideUp">
+        <p style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <span className="role-icon">{roleIcons[role]}</span>
+          Ваша роль: <strong style={{ color: roleColors[role] }}>{roleNames[role]}</strong>
+        </p>
         {role === 'mafia' && <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Убивайте мирных ночью. Мафия побеждает когда её столько же сколько мирных.</p>}
         {role === 'commissioner' && <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Проверяйте игроков ночью. Узнаёте мафию или нет.</p>}
         {role === 'doctor' && <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Лечите игроков ночью. Защитите от убийства.</p>}
@@ -312,13 +329,36 @@ function Game({ user, token }) {
 
   const renderGameResult = () => {
     if (!gameResult) return null;
+    const isWin = (gameResult.winner === 'town' && role !== 'mafia') || (gameResult.winner === 'mafia' && role === 'mafia');
+
+    const confettiColors = ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8'];
+
     return (
-      <div className="card mt-2" style={{
+      <div className="card mt-2 animate-slideUp" style={{
         background: gameResult.winner === 'town' ? 'rgba(46, 204, 113, 0.15)' : 'rgba(231, 76, 60, 0.15)'
       }}>
-        <h2 className="text-center mb-2">
-          {gameResult.winner === 'town' ? 'Мирные победили!' : 'Мафия победила!'}
+        {isWin && (
+          <div className="confetti">
+            {Array.from({ length: 50 }).map((_, i) => (
+              <div
+                key={i}
+                className="confetti-piece"
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  background: confettiColors[Math.floor(Math.random() * confettiColors.length)],
+                  animationDelay: `${Math.random() * 2}s`,
+                  animationDuration: `${2 + Math.random() * 2}s`
+                }}
+              />
+            ))}
+          </div>
+        )}
+        <h2 className="text-center mb-2" style={{ fontSize: '2rem' }}>
+          {isWin ? '🎉 Победа!' : '😢 Поражение'}
         </h2>
+        <h3 className="text-center mb-2">
+          {gameResult.winner === 'town' ? 'Мирные победили!' : 'Мафия победила!'}
+        </h3>
         <div className="grid">
           {gameResult.players.map(p => (
             <div key={p.id} className="card" style={{
@@ -332,7 +372,7 @@ function Game({ user, token }) {
                          p.role === 'commissioner' ? 'var(--warning)' :
                          p.role === 'doctor' ? 'var(--success)' : 'var(--text-primary)'
                 }}>
-                  {{ mafia: 'Мафия', commissioner: 'Комиссар', doctor: 'Врач', civilian: 'Мирный' }[p.role]}
+                  {{ mafia: '🗡️ Мафия', commissioner: '🔍 Шериф', doctor: '💊 Врач', civilian: '👤 Мирный' }[p.role]}
                 </span>
               </div>
             </div>
@@ -360,9 +400,12 @@ function Game({ user, token }) {
   if (!connected) {
     return (
       <div className="flex-center" style={{ minHeight: '60vh' }}>
-        <div className="card text-center">
+        <div className="card text-center" style={{ animation: 'pulse 2s infinite' }}>
           <h2>Подключение к серверу...</h2>
           {error && <p className="error mt-1">{error}</p>}
+          <p style={{ color: 'var(--text-muted)', marginTop: '1rem' }}>
+            Если долго не подключается, попробуйте обновить страницу
+          </p>
         </div>
       </div>
     );
@@ -371,12 +414,16 @@ function Game({ user, token }) {
   return (
     <div>
       <div className="flex-between mb-2">
-        <div>
+        <div className="phase-transition">
           <h1>Комната #{roomId}</h1>
           {phase !== 'waiting' && phase !== 'ended' && (
             <p style={{ color: 'var(--text-muted)' }}>
               {phase === 'night' ? '🌙 Ночь' : '☀️ День'} — День {dayNumber}
-              {timeLeft > 0 && <span> — {formatTime(timeLeft)}</span>}
+              {timeLeft > 0 && (
+                <span className={timeLeft <= 10 ? 'timer-danger' : timeLeft <= 30 ? 'timer-warning' : ''}>
+                  {' — '}{formatTime(timeLeft)}
+                </span>
+              )}
             </p>
           )}
         </div>
@@ -391,7 +438,7 @@ function Game({ user, token }) {
             <h2 className="mb-1">Игроки ({allAlivePlayers.length})</h2>
             <div className="grid">
               {players.map(p => (
-                <div key={p.id} className="card" style={{
+                <div key={p.id} className="card player-card" style={{
                   padding: '0.75rem',
                   background: p.id === user.id ? 'rgba(107, 63, 160, 0.3)' :
                               !p.isAlive ? 'rgba(231, 76, 60, 0.2)' : 'rgba(13, 6, 24, 0.5)',
