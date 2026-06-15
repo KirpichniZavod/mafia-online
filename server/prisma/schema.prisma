@@ -8,19 +8,21 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  nickname  String   @unique
-  login     String   @unique
-  password  String
-  isAdmin   Boolean  @default(false)
-  isBanned  Boolean  @default(false)
-  theme     String   @default("dark")
-  avatar    String?
-  wins      Int      @default(0)
-  losses    Int      @default(0)
-  gamesPlayed Int    @default(0)
-  createdAt DateTime @default(now())
-  players   Player[]
+  id          Int      @id @default(autoincrement())
+  nickname    String   @unique
+  login       String   @unique
+  password    String
+  isAdmin     Boolean  @default(false)
+  isBanned    Boolean  @default(false)
+  banReason   String?
+  banUntil    DateTime?
+  theme       String   @default("dark")
+  avatar      String?
+  wins        Int      @default(0)
+  losses      Int      @default(0)
+  gamesPlayed Int      @default(0)
+  createdAt   DateTime @default(now())
+  players     Player[]
 }
 
 model Room {

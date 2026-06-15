@@ -16,8 +16,8 @@ router.get('/users', async (req, res) => {
     const users = await prisma.user.findMany({
       select: {
         id: true, nickname: true, login: true,
-        isAdmin: true, isBanned: true, createdAt: true,
-        wins: true, losses: true, gamesPlayed: true
+        isAdmin: true, isBanned: true, banReason: true, banUntil: true,
+        createdAt: true, wins: true, losses: true, gamesPlayed: true
       }
     });
     res.json(users);
@@ -31,6 +31,7 @@ router.post('/ban/:userId', async (req, res) => {
   const ip = log.getClientIP(req);
   try {
     const { userId } = req.params;
+    const { reason, duration } = req.body;
 
     const user = await prisma.user.findUnique({
       where: { id: parseInt(userId) }
@@ -45,14 +46,32 @@ router.post('/ban/:userId', async (req, res) => {
       return res.status(400).json({ error: 'Cannot ban admin' });
     }
 
+    let banUntil = null;
+    if (duration && duration !== 'permanent') {
+      const seconds = parseInt(duration);
+      if (!isNaN(seconds) && seconds > 0) {
+        banUntil = new Date(Date.now() + seconds * 1000);
+      }
+    }
+
     await prisma.user.update({
       where: { id: parseInt(userId) },
-      data: { isBanned: true }
+      data: {
+        isBanned: true,
+        banReason: reason || null,
+        banUntil
+      }
     });
 
-    log.auth.adminAction(req.user.nickname, 'BAN', user.nickname, ip);
+    const durationText = banUntil ? `until ${banUntil.toISOString()}` : 'permanent';
+    log.auth.adminAction(req.user.nickname, 'BAN', `${user.nickname} (${durationText})`, ip);
 
-    res.json({ message: 'User banned', user: { id: user.id, nickname: user.nickname } });
+    res.json({
+      message: 'User banned',
+      user: { id: user.id, nickname: user.nickname },
+      banUntil,
+      reason
+    });
   } catch (error) {
     log.log('admin', log.ICONS.error, `BAN ERROR: ${error.message}`);
     res.status(500).json({ error: 'Internal server error' });
@@ -66,7 +85,7 @@ router.post('/unban/:userId', async (req, res) => {
 
     const updatedUser = await prisma.user.update({
       where: { id: parseInt(userId) },
-      data: { isBanned: false }
+      data: { isBanned: false, banReason: null, banUntil: null }
     });
 
     log.auth.adminAction(req.user.nickname, 'UNBAN', updatedUser.nickname, ip);
@@ -74,6 +93,51 @@ router.post('/unban/:userId', async (req, res) => {
     res.json({ message: 'User unbanned', user: { id: updatedUser.id, nickname: updatedUser.nickname } });
   } catch (error) {
     log.log('admin', log.ICONS.error, `UNBAN ERROR: ${error.message}`);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.get('/rooms', async (req, res) => {
+  const ip = log.getClientIP(req);
+  log.auth.adminAction(req.user.nickname, 'VIEW ROOMS', 'all', ip);
+  try {
+    const rooms = await prisma.room.findMany({
+      include: {
+        _count: { select: { players: true } },
+        players: {
+          include: { user: { select: { id: true, nickname: true } } }
+        }
+      }
+    });
+    res.json(rooms);
+  } catch (error) {
+    log.log('admin', log.ICONS.error, `GET ROOMS ERROR: ${error.message}`);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.delete('/room/:roomId', async (req, res) => {
+  const ip = log.getClientIP(req);
+  try {
+    const { roomId } = req.params;
+
+    const room = await prisma.room.findUnique({
+      where: { id: parseInt(roomId) },
+      include: { players: true }
+    });
+
+    if (!room) {
+      return res.status(404).json({ error: 'Room not found' });
+    }
+
+    await prisma.player.deleteMany({ where: { roomId: parseInt(roomId) } });
+    await prisma.room.delete({ where: { id: parseInt(roomId) } });
+
+    log.auth.adminAction(req.user.nickname, 'DELETE ROOM', `#${roomId} "${room.name}" (${room.players.length} players)`, ip);
+
+    res.json({ message: 'Room deleted', roomId: parseInt(roomId) });
+  } catch (error) {
+    log.log('admin', log.ICONS.error, `DELETE ROOM ERROR: ${error.message}`);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

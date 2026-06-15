@@ -83,8 +83,18 @@ router.post('/login', async (req, res) => {
     }
 
     if (user.isBanned) {
-      log.auth.banned(login, ip);
-      return res.status(403).json({ error: 'Account is banned' });
+      if (user.banUntil && new Date(user.banUntil) < new Date()) {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { isBanned: false, banReason: null, banUntil: null }
+        });
+      } else {
+        const banInfo = user.banReason
+          ? `Account is banned: ${user.banReason}${user.banUntil ? ` (until ${new Date(user.banUntil).toLocaleString('ru-RU')})` : ' (permanent)'}`
+          : 'Account is banned';
+        log.auth.banned(login, ip);
+        return res.status(403).json({ error: banInfo });
+      }
     }
 
     const validPassword = await bcrypt.compare(password, user.password);

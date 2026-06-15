@@ -160,7 +160,7 @@ function Game({ user, token }) {
     emit('mafia-kill', { roomId: parseInt(roomId), targetId });
   };
 
-  const handleCommissionerCheck = (targetId) => {
+  const handlecommissionerCheck = (targetId) => {
     setSelectedTarget(targetId);
     setActionMade(true);
     emit('commissioner-check', { roomId: parseInt(roomId), targetId });
@@ -223,7 +223,7 @@ function Game({ user, token }) {
           <h3 className="mb-1">Кого проверить?</h3>
           <div className="grid">
             {alivePlayers.map(p => (
-              <button key={p.id} className="btn btn-secondary" onClick={() => handleCommissionerCheck(p.id)}>
+              <button key={p.id} className="btn btn-secondary" onClick={() => handlecommissionerCheck(p.id)}>
                 {p.nickname}
               </button>
             ))}

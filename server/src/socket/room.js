@@ -6,6 +6,8 @@ const prisma = new PrismaClient();
 const activeRooms = new Map();
 
 function roomHandler(io, socket, prisma) {
+  const uid = () => parseInt(uid());
+
   socket.on('create-room', async (data, callback) => {
     try {
       const { name, maxPlayers = 10, mafiaCount = 0, commissionerCount = 1, doctorCount = 1 } = data;
@@ -15,7 +17,7 @@ function roomHandler(io, socket, prisma) {
       }
 
       const existingRoom = await prisma.room.findFirst({
-        where: { hostId: socket.user.id, status: 'waiting' }
+        where: { hostId: uid(), status: 'waiting' }
       });
 
       if (existingRoom) {
@@ -25,7 +27,7 @@ function roomHandler(io, socket, prisma) {
       const room = await prisma.room.create({
         data: {
           name,
-          hostId: socket.user.id,
+          hostId: uid(),
           maxPlayers: Math.min(Math.max(maxPlayers, 5), 10),
           status: 'waiting',
           mafiaCount,
@@ -35,14 +37,14 @@ function roomHandler(io, socket, prisma) {
       });
 
       await prisma.player.create({
-        data: { userId: socket.user.id, roomId: room.id }
+        data: { userId: uid(), roomId: room.id }
       });
 
       socket.join(`room:${room.id}`);
 
       activeRooms.set(room.id, {
-        players: [socket.user.id],
-        host: socket.user.id
+        players: [uid()],
+        host: uid()
       });
 
       log.room.create(socket.user.nickname, room.id, name, { maxPlayers, mafiaCount, commissionerCount, doctorCount });
@@ -69,15 +71,15 @@ function roomHandler(io, socket, prisma) {
         return callback({ error: 'Room not found' });
       }
 
-      const alreadyJoined = room.players.some(p => p.userId === socket.user.id);
+      const alreadyJoined = room.players.some(p => p.userId === uid());
 
       if (alreadyJoined) {
         log.room.rejoin(socket.user.nickname, roomId);
         socket.join(`room:${room.id}`);
 
         const roomData = activeRooms.get(room.id) || { players: [], host: room.hostId };
-        if (!roomData.players.includes(socket.user.id)) {
-          roomData.players.push(socket.user.id);
+        if (!roomData.players.includes(uid())) {
+          roomData.players.push(uid());
         }
         activeRooms.set(room.id, roomData);
 
@@ -109,13 +111,13 @@ function roomHandler(io, socket, prisma) {
       }
 
       await prisma.player.create({
-        data: { userId: socket.user.id, roomId: room.id }
+        data: { userId: uid(), roomId: room.id }
       });
 
       socket.join(`room:${room.id}`);
 
       const roomData = activeRooms.get(room.id) || { players: [], host: room.hostId };
-      roomData.players.push(socket.user.id);
+      roomData.players.push(uid());
       activeRooms.set(room.id, roomData);
 
       const players = await prisma.player.findMany({
@@ -148,21 +150,21 @@ function roomHandler(io, socket, prisma) {
       log.room.leave(socket.user.nickname, roomId);
 
       await prisma.player.deleteMany({
-        where: { userId: socket.user.id, roomId: roomId }
+        where: { userId: uid(), roomId: roomId }
       });
 
       socket.leave(`room:${roomId}`);
 
       const roomData = activeRooms.get(roomId);
       if (roomData) {
-        roomData.players = roomData.players.filter(id => id !== socket.user.id);
+        roomData.players = roomData.players.filter(id => id !== uid());
         if (roomData.players.length === 0) {
           activeRooms.delete(roomId);
           await prisma.room.delete({ where: { id: roomId } });
           log.room.delete(roomId);
           io.emit('room-deleted', { roomId });
         } else {
-          if (roomData.host === socket.user.id) {
+          if (roomData.host === uid()) {
             roomData.host = roomData.players[0];
             log.log('room', log.ICONS.room, `HOST TRANSFER #${roomId} → new host: ${roomData.host}`);
           }

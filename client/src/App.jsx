@@ -5,6 +5,7 @@ import Register from './pages/Register';
 import Lobby from './pages/Lobby';
 import Game from './pages/Game';
 import Profile from './pages/Profile';
+import Privacy from './pages/Privacy';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -119,15 +120,14 @@ function App() {
                 <Navigate to="/login" />
               }
             />
+            <Route path="/privacy" element={<Privacy />} />
           </Routes>
         </main>
 
         <footer className="footer">
+          <Link to="/privacy" className="footer-link">Политика конфиденциальности</Link>
           <button className="footer-link" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
             Правила поведения
-          </button>
-          <button className="footer-link" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
-            Политика конфиденциальности
           </button>
         </footer>
       </div>
