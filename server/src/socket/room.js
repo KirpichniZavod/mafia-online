@@ -7,7 +7,7 @@ const activeRooms = new Map();
 function roomHandler(io, socket, prisma) {
   socket.on('create-room', async (data, callback) => {
     try {
-      const { name, maxPlayers = 10 } = data;
+      const { name, maxPlayers = 10, mafiaCount = 0, commissionerCount = 1, doctorCount = 1 } = data;
 
       if (!name || name.length < 1 || name.length > 30) {
         return callback({ error: 'Room name must be 1-30 characters' });
@@ -29,7 +29,10 @@ function roomHandler(io, socket, prisma) {
           name,
           hostId: socket.user.id,
           maxPlayers: Math.min(Math.max(maxPlayers, 5), 10),
-          status: 'waiting'
+          status: 'waiting',
+          mafiaCount,
+          commissionerCount,
+          doctorCount
         }
       });
 

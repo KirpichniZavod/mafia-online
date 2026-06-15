@@ -7,6 +7,7 @@ const { PrismaClient } = require('@prisma/client');
 
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
+const profileRoutes = require('./routes/profile');
 const socketHandler = require('./socket');
 
 const prisma = new PrismaClient();
@@ -25,6 +26,7 @@ app.use(express.json());
 
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/profile', profileRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });

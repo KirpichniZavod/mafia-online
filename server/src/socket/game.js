@@ -26,7 +26,7 @@ function gameHandler(io, socket, prisma) {
         return callback({ error: 'Need at least 5 players to start' });
       }
 
-      const roles = assignRoles(room.players.length);
+      const roles = assignRoles(room.players.length, room);
 
       for (let i = 0; i < room.players.length; i++) {
         await prisma.player.update({
@@ -417,6 +417,18 @@ async function endGame(io, roomId, winner, players) {
     data: { status: 'finished' }
   });
 
+  for (const p of players) {
+    const isWinner = (winner === 'town' && p.role !== 'mafia') || (winner === 'mafia' && p.role === 'mafia');
+    await prisma.user.update({
+      where: { id: p.user.id },
+      data: {
+        gamesPlayed: { increment: 1 },
+        wins: isWinner ? { increment: 1 } : undefined,
+        losses: !isWinner ? { increment: 1 } : undefined
+      }
+    });
+  }
+
   games.delete(roomId);
 
   io.to(`room:${roomId}`).emit('game-ended', {
@@ -430,15 +442,21 @@ async function endGame(io, roomId, winner, players) {
   });
 }
 
-function assignRoles(playerCount) {
-  const mafiaCount = Math.floor(playerCount / 4) || 1;
+function assignRoles(playerCount, room) {
+  const mCount = room.mafiaCount || Math.floor(playerCount / 4) || 1;
+  const cCount = room.commissionerCount || 1;
+  const dCount = room.doctorCount || 1;
   const roles = [];
 
-  for (let i = 0; i < mafiaCount; i++) {
+  for (let i = 0; i < mCount; i++) {
     roles.push('mafia');
   }
-  roles.push('commissioner');
-  roles.push('doctor');
+  for (let i = 0; i < cCount; i++) {
+    roles.push('commissioner');
+  }
+  for (let i = 0; i < dCount; i++) {
+    roles.push('doctor');
+  }
 
   while (roles.length < playerCount) {
     roles.push('civilian');

@@ -30,6 +30,7 @@ function Game({ user, token }) {
 
     newSocket.on('connect', () => {
       setConnected(true);
+      newSocket.emit('join-socket-room', { roomId: parseInt(roomId) });
       newSocket.emit('get-role', { roomId: parseInt(roomId) }, (response) => {
         if (response && response.role) {
           setRole(response.role);

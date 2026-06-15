@@ -26,6 +26,12 @@ function socketHandler(io, prisma) {
       console.log(`User disconnected: ${socket.user.nickname}`);
     });
 
+    socket.on('join-socket-room', (data) => {
+      const { roomId } = data;
+      socket.join(`room:${roomId}`);
+      console.log(`${socket.user.nickname} joined socket room ${roomId}`);
+    });
+
     roomHandler(io, socket, prisma);
     gameHandler(io, socket, prisma);
   });

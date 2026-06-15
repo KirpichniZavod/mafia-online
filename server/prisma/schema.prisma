@@ -14,18 +14,26 @@ model User {
   password  String
   isAdmin   Boolean  @default(false)
   isBanned  Boolean  @default(false)
+  theme     String   @default("dark")
+  avatar    String?
+  wins      Int      @default(0)
+  losses    Int      @default(0)
+  gamesPlayed Int    @default(0)
   createdAt DateTime @default(now())
   players   Player[]
 }
 
 model Room {
-  id         Int      @id @default(autoincrement())
-  name       String
-  hostId     Int
-  maxPlayers Int      @default(10)
-  status     String   @default("waiting")
-  createdAt  DateTime @default(now())
-  players    Player[]
+  id           Int      @id @default(autoincrement())
+  name         String
+  hostId       Int
+  maxPlayers   Int      @default(10)
+  status       String   @default("waiting")
+  mafiaCount   Int      @default(0)
+  commissionerCount Int @default(1)
+  doctorCount  Int      @default(1)
+  createdAt    DateTime @default(now())
+  players      Player[]
 }
 
 model Player {

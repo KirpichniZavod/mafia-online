@@ -4,10 +4,17 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Lobby from './pages/Lobby';
 import Game from './pages/Game';
+import Profile from './pages/Profile';
 
 function App() {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('token'));
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
 
   useEffect(() => {
     if (token) {
@@ -38,10 +45,28 @@ function App() {
         <header className="header">
           <Link to="/" className="logo">Мафия Онлайн</Link>
           <nav className="nav-links">
+            <div className="theme-switcher">
+              <button
+                className={`theme-btn theme-dark ${theme === 'dark' ? 'active' : ''}`}
+                onClick={() => setTheme('dark')}
+                title="Тёмная тема"
+              />
+              <button
+                className={`theme-btn theme-light ${theme === 'light' ? 'active' : ''}`}
+                onClick={() => setTheme('light')}
+                title="Светлая тема"
+              />
+              <button
+                className={`theme-btn theme-lemon ${theme === 'lemon' ? 'active' : ''}`}
+                onClick={() => setTheme('lemon')}
+                title="Лимонная тема"
+              />
+            </div>
             {user ? (
               <>
-                <span className="nav-link">Привет, {user.nickname}</span>
-                <button className="btn btn-secondary" onClick={handleLogout}>
+                <Link to="/profile" className="nav-link">{user.nickname}</Link>
+                <Link to="/lobby" className="nav-link">Лобби</Link>
+                <button className="btn btn-secondary btn-small" onClick={handleLogout}>
                   Выйти
                 </button>
               </>
@@ -56,62 +81,57 @@ function App() {
 
         <main className="container">
           <Routes>
-            <Route path="/" element={<Home user={user} />} />
-            <Route 
-              path="/login" 
+            <Route path="/" element={
+              user ? <Navigate to="/lobby" /> : <Navigate to="/login" />
+            } />
+            <Route
+              path="/login"
               element={
-                user ? <Navigate to="/lobby" /> : 
+                user ? <Navigate to="/lobby" /> :
                 <Login onLogin={handleLogin} />
-              } 
+              }
             />
-            <Route 
-              path="/register" 
+            <Route
+              path="/register"
               element={
-                user ? <Navigate to="/lobby" /> : 
+                user ? <Navigate to="/lobby" /> :
                 <Register onLogin={handleLogin} />
-              } 
+              }
             />
-            <Route 
-              path="/lobby" 
+            <Route
+              path="/lobby"
               element={
-                user ? <Lobby user={user} token={token} /> : 
+                user ? <Lobby user={user} token={token} /> :
                 <Navigate to="/login" />
-              } 
+              }
             />
-            <Route 
-              path="/game/:roomId" 
+            <Route
+              path="/game/:roomId"
               element={
-                user ? <Game user={user} token={token} /> : 
+                user ? <Game user={user} token={token} /> :
                 <Navigate to="/login" />
-              } 
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                user ? <Profile user={user} token={token} onThemeChange={setTheme} /> :
+                <Navigate to="/login" />
+              }
             />
           </Routes>
         </main>
+
+        <footer className="footer">
+          <button className="footer-link" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+            Правила поведения
+          </button>
+          <button className="footer-link" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+            Политика конфиденциальности
+          </button>
+        </footer>
       </div>
     </Router>
-  );
-}
-
-function Home({ user }) {
-  return (
-    <div className="text-center">
-      <h1 style={{ fontSize: '3rem', marginBottom: '1rem' }}>
-        Мафия Онлайн
-      </h1>
-      <p style={{ fontSize: '1.25rem', color: 'var(--text-secondary)', marginBottom: '2rem' }}>
-        Классическая игра в мафию онлайн с друзьями
-      </p>
-      {!user && (
-        <Link to="/register" className="btn btn-primary" style={{ fontSize: '1.1rem', padding: '1rem 2rem' }}>
-          Начать игру
-        </Link>
-      )}
-      {user && (
-        <Link to="/lobby" className="btn btn-primary" style={{ fontSize: '1.1rem', padding: '1rem 2rem' }}>
-          Войти в лобби
-        </Link>
-      )}
-    </div>
   );
 }
 

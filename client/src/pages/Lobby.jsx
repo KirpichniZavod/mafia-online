@@ -9,6 +9,9 @@ function Lobby({ user, token }) {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [roomName, setRoomName] = useState('');
   const [maxPlayers, setMaxPlayers] = useState(10);
+  const [mafiaCount, setMafiaCount] = useState(1);
+  const [commissionerCount, setCommissionerCount] = useState(1);
+  const [doctorCount, setDoctorCount] = useState(1);
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
@@ -18,7 +21,6 @@ function Lobby({ user, token }) {
     });
 
     newSocket.on('connect', () => {
-      console.log('Connected to server');
       loadRooms(newSocket);
     });
 
@@ -49,7 +51,19 @@ function Lobby({ user, token }) {
       return;
     }
 
-    socket.emit('create-room', { name: roomName, maxPlayers }, (response) => {
+    const totalSpecial = mafiaCount + commissionerCount + doctorCount;
+    if (totalSpecial > maxPlayers) {
+      setError('Сумма специальных ролей не может превышать максимум игроков');
+      return;
+    }
+
+    socket.emit('create-room', {
+      name: roomName,
+      maxPlayers,
+      mafiaCount,
+      commissionerCount,
+      doctorCount
+    }, (response) => {
       if (response.error) {
         setError(response.error);
       } else if (response.success) {
@@ -72,7 +86,7 @@ function Lobby({ user, token }) {
     <div>
       <div className="flex-between mb-2">
         <h1>Лобби</h1>
-        <button 
+        <button
           className="btn btn-primary"
           onClick={() => setShowCreateModal(true)}
         >
@@ -84,7 +98,7 @@ function Lobby({ user, token }) {
 
       <div className="card">
         <h2 className="mb-2">Доступные комнаты</h2>
-        
+
         {rooms.length === 0 ? (
           <p style={{ color: 'var(--text-muted)' }}>
             Нет доступных комнат. Создайте первую!
@@ -92,12 +106,12 @@ function Lobby({ user, token }) {
         ) : (
           <div className="grid">
             {rooms.map((room) => (
-              <div 
-                key={room.id} 
+              <div
+                key={room.id}
                 className="card"
-                style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
                   alignItems: 'center',
                   padding: '1rem'
                 }}
@@ -108,7 +122,7 @@ function Lobby({ user, token }) {
                     {room.players} / {room.maxPlayers} игроков
                   </p>
                 </div>
-                <button 
+                <button
                   className="btn btn-secondary"
                   onClick={() => handleJoinRoom(room.id)}
                 >
@@ -133,9 +147,9 @@ function Lobby({ user, token }) {
           alignItems: 'center',
           zIndex: 1000
         }}>
-          <div className="card" style={{ width: '100%', maxWidth: '400px' }}>
+          <div className="card" style={{ width: '100%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto' }}>
             <h2 className="mb-2">Новая комната</h2>
-            
+
             <div className="form-group">
               <label className="form-label">Название</label>
               <input
@@ -146,7 +160,7 @@ function Lobby({ user, token }) {
                 placeholder="Введите название"
               />
             </div>
-            
+
             <div className="form-group">
               <label className="form-label">Максимум игроков (5-10)</label>
               <input
@@ -158,9 +172,51 @@ function Lobby({ user, token }) {
                 max="10"
               />
             </div>
-            
-            <div className="flex gap-1">
-              <button 
+
+            <h3 className="mb-1" style={{ color: 'var(--accent-secondary)' }}>Настройки ролей</h3>
+
+            <div className="form-group">
+              <label className="form-label">Мафия: {mafiaCount}</label>
+              <input
+                type="range"
+                min="1"
+                max={Math.floor(maxPlayers / 3)}
+                value={mafiaCount}
+                onChange={(e) => setMafiaCount(parseInt(e.target.value))}
+                style={{ width: '100%' }}
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Комиссар: {commissionerCount}</label>
+              <input
+                type="range"
+                min="0"
+                max="3"
+                value={commissionerCount}
+                onChange={(e) => setCommissionerCount(parseInt(e.target.value))}
+                style={{ width: '100%' }}
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Врач: {doctorCount}</label>
+              <input
+                type="range"
+                min="0"
+                max="3"
+                value={doctorCount}
+                onChange={(e) => setDoctorCount(parseInt(e.target.value))}
+                style={{ width: '100%' }}
+              />
+            </div>
+
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+              Остальные игроки будут мирными. Мафия: {mafiaCount}, Комиссар: {commissionerCount}, Врач: {doctorCount}, Мирные: {maxPlayers - mafiaCount - commissionerCount - doctorCount}
+            </p>
+
+            <div className="flex gap-1 mt-2">
+              <button
                 className="btn btn-secondary"
                 onClick={() => {
                   setShowCreateModal(false);
@@ -171,7 +227,7 @@ function Lobby({ user, token }) {
               >
                 Отмена
               </button>
-              <button 
+              <button
                 className="btn btn-primary"
                 onClick={handleCreateRoom}
                 style={{ flex: 1 }}
