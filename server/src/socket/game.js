@@ -4,6 +4,10 @@ const prisma = new PrismaClient();
 
 const games = new Map();
 
+const NIGHT_TIMEOUT = 60000;
+const DAY_TIMEOUT = 120000;
+const RESULT_DELAY = 5000;
+
 function gameHandler(io, socket, prisma) {
   socket.on('start-game', async (data, callback) => {
     try {
@@ -14,17 +18,9 @@ function gameHandler(io, socket, prisma) {
         include: { players: { include: { user: true } } }
       });
 
-      if (!room) {
-        return callback({ error: 'Room not found' });
-      }
-
-      if (room.hostId !== socket.user.id) {
-        return callback({ error: 'Only host can start the game' });
-      }
-
-      if (room.players.length < 5) {
-        return callback({ error: 'Need at least 5 players to start' });
-      }
+      if (!room) return callback({ error: 'Room not found' });
+      if (room.hostId !== socket.user.id) return callback({ error: 'Only host can start' });
+      if (room.players.length < 5) return callback({ error: 'Need at least 5 players' });
 
       const roles = assignRoles(room.players.length, room);
 
@@ -44,20 +40,33 @@ function gameHandler(io, socket, prisma) {
         phase: 'night',
         dayNumber: 1,
         votes: {},
-        mafiaTarget: null,
-        commissionerTarget: null,
-        doctorTarget: null,
-        actionsComplete: new Set()
+        nightActions: {},
+        nightPlayers: new Set(),
+        timer: null,
+        startTime: Date.now()
       };
 
       games.set(roomId, game);
+
+      const updatedPlayers = await prisma.player.findMany({
+        where: { roomId },
+        include: { user: { select: { id: true, nickname: true } } }
+      });
 
       io.to(`room:${roomId}`).emit('game-started', { roomId });
 
       io.to(`room:${roomId}`).emit('phase-change', {
         phase: 'night',
-        dayNumber: 1
+        dayNumber: 1,
+        timeLeft: NIGHT_TIMEOUT / 1000,
+        players: updatedPlayers.map(p => ({
+          id: p.user.id,
+          nickname: p.user.nickname,
+          isAlive: p.isAlive
+        }))
       });
+
+      startNightTimer(io, roomId, game);
 
       callback({ success: true });
     } catch (error) {
@@ -69,22 +78,33 @@ function gameHandler(io, socket, prisma) {
   socket.on('get-role', async (data, callback) => {
     try {
       const { roomId } = data;
-
       const player = await prisma.player.findFirst({
-        where: {
-          userId: socket.user.id,
-          roomId
-        }
+        where: { userId: socket.user.id, roomId }
       });
-
-      if (!player) {
-        return callback({ error: 'Not in this room' });
-      }
-
+      if (!player) return callback({ error: 'Not in room' });
       callback({ role: player.role, isAlive: player.isAlive });
     } catch (error) {
-      console.error('Get role error:', error);
-      callback({ error: 'Failed to get role' });
+      callback({ error: 'Failed' });
+    }
+  });
+
+  socket.on('get-players', async (data, callback) => {
+    try {
+      const { roomId } = data;
+      const players = await prisma.player.findMany({
+        where: { roomId },
+        include: { user: { select: { id: true, nickname: true } } }
+      });
+      callback({
+        players: players.map(p => ({
+          id: p.user.id,
+          nickname: p.user.nickname,
+          role: p.role,
+          isAlive: p.isAlive
+        }))
+      });
+    } catch (error) {
+      callback({ error: 'Failed' });
     }
   });
 
@@ -92,35 +112,29 @@ function gameHandler(io, socket, prisma) {
     try {
       const { roomId, targetId } = data;
       const game = games.get(roomId);
-
-      if (!game || game.phase !== 'night') {
-        return callback({ error: 'Not night phase' });
-      }
+      if (!game || game.phase !== 'night') return callback({ error: 'Not night' });
 
       const player = await prisma.player.findFirst({
-        where: {
-          userId: socket.user.id,
-          roomId,
-          role: 'mafia',
-          isAlive: true
-        }
+        where: { userId: socket.user.id, roomId, role: 'mafia', isAlive: true }
       });
+      if (!player) return callback({ error: 'Not mafia' });
 
-      if (!player) {
-        return callback({ error: 'Not a living mafia member' });
-      }
-
-      game.mafiaTarget = targetId;
-      game.actionsComplete.add(`mafia-${socket.user.id}`);
-
-      io.to(`room:${roomId}`).emit('mafia-action-received');
+      game.nightActions[socket.user.id] = { type: 'kill', targetId };
+      game.nightPlayers.add(socket.user.id);
 
       callback({ success: true });
 
+      io.to(`room:${roomId}`).emit('action-received', {
+        role: 'mafia',
+        count: [...game.nightPlayers].filter(id => {
+          const p = players_cache.get(`${roomId}-${id}`);
+          return p && p.role === 'mafia';
+        }).length
+      });
+
       checkNightComplete(io, roomId, game);
     } catch (error) {
-      console.error('Mafia kill error:', error);
-      callback({ error: 'Failed to process action' });
+      callback({ error: 'Failed' });
     }
   });
 
@@ -128,48 +142,28 @@ function gameHandler(io, socket, prisma) {
     try {
       const { roomId, targetId } = data;
       const game = games.get(roomId);
-
-      if (!game || game.phase !== 'night') {
-        return callback({ error: 'Not night phase' });
-      }
+      if (!game || game.phase !== 'night') return callback({ error: 'Not night' });
 
       const player = await prisma.player.findFirst({
-        where: {
-          userId: socket.user.id,
-          roomId,
-          role: 'commissioner',
-          isAlive: true
-        }
+        where: { userId: socket.user.id, roomId, role: 'commissioner', isAlive: true }
       });
-
-      if (!player) {
-        return callback({ error: 'Not a living commissioner' });
-      }
+      if (!player) return callback({ error: 'Not commissioner' });
 
       const target = await prisma.player.findFirst({
-        where: {
-          userId: targetId,
-          roomId
-        }
+        where: { userId: targetId, roomId }
       });
-
-      if (!target) {
-        return callback({ error: 'Target not found' });
-      }
+      if (!target) return callback({ error: 'Target not found' });
 
       const isMafia = target.role === 'mafia';
-
       socket.emit('check-result', { targetId, isMafia });
 
-      game.commissionerAction = { targetId, isMafia };
-      game.actionsComplete.add('commissioner');
+      game.nightActions[socket.user.id] = { type: 'check', targetId };
+      game.nightPlayers.add(socket.user.id);
 
       callback({ success: true });
-
       checkNightComplete(io, roomId, game);
     } catch (error) {
-      console.error('Commissioner check error:', error);
-      callback({ error: 'Failed to process action' });
+      callback({ error: 'Failed' });
     }
   });
 
@@ -177,33 +171,20 @@ function gameHandler(io, socket, prisma) {
     try {
       const { roomId, targetId } = data;
       const game = games.get(roomId);
-
-      if (!game || game.phase !== 'night') {
-        return callback({ error: 'Not night phase' });
-      }
+      if (!game || game.phase !== 'night') return callback({ error: 'Not night' });
 
       const player = await prisma.player.findFirst({
-        where: {
-          userId: socket.user.id,
-          roomId,
-          role: 'doctor',
-          isAlive: true
-        }
+        where: { userId: socket.user.id, roomId, role: 'doctor', isAlive: true }
       });
+      if (!player) return callback({ error: 'Not doctor' });
 
-      if (!player) {
-        return callback({ error: 'Not a living doctor' });
-      }
-
-      game.doctorTarget = targetId;
-      game.actionsComplete.add('doctor');
+      game.nightActions[socket.user.id] = { type: 'heal', targetId };
+      game.nightPlayers.add(socket.user.id);
 
       callback({ success: true });
-
       checkNightComplete(io, roomId, game);
     } catch (error) {
-      console.error('Doctor heal error:', error);
-      callback({ error: 'Failed to process action' });
+      callback({ error: 'Failed' });
     }
   });
 
@@ -211,203 +192,293 @@ function gameHandler(io, socket, prisma) {
     try {
       const { roomId, targetId } = data;
       const game = games.get(roomId);
-
-      if (!game || game.phase !== 'day') {
-        return callback({ error: 'Not day phase' });
-      }
+      if (!game || game.phase !== 'day') return callback({ error: 'Not day' });
 
       const player = await prisma.player.findFirst({
-        where: {
-          userId: socket.user.id,
-          roomId,
-          isAlive: true
-        }
+        where: { userId: socket.user.id, roomId, isAlive: true }
       });
-
-      if (!player) {
-        return callback({ error: 'Not a living player' });
-      }
+      if (!player) return callback({ error: 'Not alive' });
 
       game.votes[socket.user.id] = targetId;
-
-      io.to(`room:${roomId}`).emit('vote-cast', {
-        voterId: socket.user.id,
-        totalVotes: Object.keys(game.votes).length
-      });
-
-      callback({ success: true });
 
       const alivePlayers = await prisma.player.findMany({
         where: { roomId, isAlive: true }
       });
 
+      io.to(`room:${roomId}`).emit('vote-cast', {
+        voterId: socket.user.id,
+        totalVotes: Object.keys(game.votes).length,
+        totalAlive: alivePlayers.length
+      });
+
+      callback({ success: true });
+
       if (Object.keys(game.votes).length >= alivePlayers.length) {
+        if (game.timer) clearTimeout(game.timer);
         processVotes(io, roomId, game);
       }
     } catch (error) {
-      console.error('Vote error:', error);
-      callback({ error: 'Failed to cast vote' });
-    }
-  });
-
-  socket.on('get-players', async (data, callback) => {
-    try {
-      const { roomId } = data;
-
-      const players = await prisma.player.findMany({
-        where: { roomId },
-        include: { user: { select: { id: true, nickname: true } } }
-      });
-
-      const playerList = players.map(p => ({
-        id: p.user.id,
-        nickname: p.user.nickname,
-        role: p.role,
-        isAlive: p.isAlive
-      }));
-
-      callback({ players: playerList });
-    } catch (error) {
-      console.error('Get players error:', error);
-      callback({ error: 'Failed to get players' });
+      callback({ error: 'Failed' });
     }
   });
 }
 
-function checkNightComplete(io, roomId, game) {
-  const requiredActions = ['mafia-0', 'commissioner', 'doctor'];
+const players_cache = new Map();
 
-  const mafiaComplete = [...game.actionsComplete].some(a => a.startsWith('mafia-'));
-  const commissionerComplete = game.actionsComplete.has('commissioner');
-  const doctorComplete = game.actionsComplete.has('doctor');
+function startNightTimer(io, roomId, game) {
+  if (game.timer) clearTimeout(game.timer);
 
-  if (mafiaComplete && commissionerComplete && doctorComplete) {
-    processNight(io, roomId, game);
+  const tick = () => {
+    const elapsed = Date.now() - game.startTime;
+    const left = Math.max(0, Math.ceil((NIGHT_TIMEOUT - elapsed) / 1000));
+    io.to(`room:${roomId}`).emit('timer-tick', { timeLeft: left });
+
+    if (left > 0) {
+      game.timer = setTimeout(tick, 1000);
+    } else {
+      processNight(io, roomId, game);
+    }
+  };
+
+  game.timer = setTimeout(tick, 1000);
+}
+
+function startDayTimer(io, roomId, game) {
+  if (game.timer) clearTimeout(game.timer);
+  game.startTime = Date.now();
+
+  const tick = () => {
+    const elapsed = Date.now() - game.startTime;
+    const left = Math.max(0, Math.ceil((DAY_TIMEOUT - elapsed) / 1000));
+    io.to(`room:${roomId}`).emit('timer-tick', { timeLeft: left });
+
+    if (left > 0) {
+      game.timer = setTimeout(tick, 1000);
+    } else {
+      processVotes(io, roomId, game);
+    }
+  };
+
+  game.timer = setTimeout(tick, 1000);
+}
+
+async function checkNightComplete(io, roomId, game) {
+  const requiredRoles = ['mafia', 'commissioner', 'doctor'];
+  const actedRoles = new Set();
+
+  for (const [userId, action] of Object.entries(game.nightActions)) {
+    const cacheKey = `${roomId}-${userId}`;
+    let player = players_cache.get(cacheKey);
+    if (!player) {
+      player = await prisma.player.findFirst({
+        where: { userId: parseInt(userId), roomId },
+        select: { role: true }
+      });
+      if (player) players_cache.set(cacheKey, player);
+    }
+    if (player) actedRoles.add(player.role);
+  }
+
+  const room = await prisma.room.findUnique({ where: { id: roomId } });
+  const allRoles = [];
+  if ((room.mafiaCount || 1) > 0) allRoles.push('mafia');
+  if ((room.commissionerCount || 1) > 0) allRoles.push('commissioner');
+  if ((room.doctorCount || 1) > 0) allRoles.push('doctor');
+
+  const allActed = allRoles.every(r => actedRoles.has(r));
+
+  if (allActed) {
+    if (game.timer) clearTimeout(game.timer);
+    await processNight(io, roomId, game);
   }
 }
 
 async function processNight(io, roomId, game) {
-  const killed = game.mafiaTarget;
-  const healed = game.doctorTarget;
+  const alivePlayers = await prisma.player.findMany({
+    where: { roomId, isAlive: true },
+    include: { user: { select: { id: true, nickname: true } } }
+  });
 
-  let actualKilled = null;
+  const mafiaIds = alivePlayers.filter(p => p.role === 'mafia').map(p => p.userId);
 
-  if (killed && killed !== healed) {
-    await prisma.player.update({
-      where: { userId: killed },
-      data: { isAlive: false }
-    });
-    actualKilled = killed;
+  let targetId = null;
+  let voteCount = {};
+  for (const mid of mafiaIds) {
+    const action = game.nightActions[mid];
+    if (action && action.type === 'kill') {
+      voteCount[action.targetId] = (voteCount[action.targetId] || 0) + 1;
+    }
+  }
+  let maxVotes = 0;
+  for (const [tid, count] of Object.entries(voteCount)) {
+    if (count > maxVotes) {
+      maxVotes = count;
+      targetId = parseInt(tid);
+    }
   }
 
-  game.mafiaTarget = null;
-  game.commissionerAction = null;
-  game.doctorTarget = null;
-  game.actionsComplete.clear();
+  let healedId = null;
+  for (const [userId, action] of Object.entries(game.nightActions)) {
+    if (action.type === 'heal') {
+      healedId = action.targetId;
+    }
+  }
 
-  const players = await prisma.player.findMany({
+  let killedId = null;
+  if (targetId && targetId !== healedId) {
+    const targetPlayer = alivePlayers.find(p => p.userId === targetId);
+    if (targetPlayer) {
+      await prisma.player.update({
+        where: { id: targetPlayer.id },
+        data: { isAlive: false }
+      });
+      killedId = targetId;
+    }
+  }
+
+  game.nightActions = {};
+  game.nightPlayers = new Set();
+
+  const updatedPlayers = await prisma.player.findMany({
     where: { roomId },
     include: { user: { select: { id: true, nickname: true } } }
   });
 
+  const killedPlayer = killedId ? updatedPlayers.find(p => p.userId === killedId) : null;
+
   io.to(`room:${roomId}`).emit('night-result', {
-    killedId: actualKilled,
-    players: players.map(p => ({
+    killedId,
+    killedNickname: killedPlayer ? killedPlayer.user.nickname : null,
+    wasHealed: targetId === healedId && healedId !== null,
+    players: updatedPlayers.map(p => ({
       id: p.user.id,
       nickname: p.user.nickname,
       isAlive: p.isAlive
     }))
   });
 
-  const winner = await checkWinCondition(roomId, players);
-  
+  const winner = checkWinCondition(updatedPlayers);
+
   if (winner) {
-    await endGame(io, roomId, winner, players);
+    await endGame(io, roomId, winner, updatedPlayers);
     return;
   }
 
   game.phase = 'day';
   game.dayNumber++;
   game.votes = {};
+  game.startTime = Date.now();
 
   io.to(`room:${roomId}`).emit('phase-change', {
     phase: 'day',
-    dayNumber: game.dayNumber
-  });
-}
-
-async function processVotes(io, roomId, game) {
-  const voteCounts = {};
-
-  for (const [voter, target] of Object.entries(game.votes)) {
-    if (target !== null) {
-      voteCounts[target] = (voteCounts[target] || 0) + 1;
-    }
-  }
-
-  let maxVotes = 0;
-  let eliminatedId = null;
-
-  for (const [target, count] of Object.entries(voteCounts)) {
-    if (count > maxVotes) {
-      maxVotes = count;
-      eliminatedId = parseInt(target);
-    }
-  }
-
-  if (eliminatedId) {
-    await prisma.player.update({
-      where: { userId: eliminatedId },
-      data: { isAlive: false }
-    });
-  }
-
-  const players = await prisma.player.findMany({
-    where: { roomId },
-    include: { user: { select: { id: true, nickname: true } } }
-  });
-
-  io.to(`room:${roomId}`).emit('vote-result', {
-    eliminatedId,
-    voteCounts,
-    players: players.map(p => ({
+    dayNumber: game.dayNumber,
+    timeLeft: DAY_TIMEOUT / 1000,
+    players: updatedPlayers.map(p => ({
       id: p.user.id,
       nickname: p.user.nickname,
       isAlive: p.isAlive
     }))
   });
 
-  const winner = await checkWinCondition(roomId, players);
-  
+  startDayTimer(io, roomId, game);
+}
+
+async function processVotes(io, roomId, game) {
+  if (game.phase !== 'day') return;
+
+  const voteCounts = {};
+  for (const [voter, target] of Object.entries(game.votes)) {
+    if (target !== null && target !== undefined) {
+      voteCounts[target] = (voteCounts[target] || 0) + 1;
+    }
+  }
+
+  let maxVotes = 0;
+  let eliminatedId = null;
+  let tie = false;
+
+  for (const [target, count] of Object.entries(voteCounts)) {
+    if (count > maxVotes) {
+      maxVotes = count;
+      eliminatedId = parseInt(target);
+      tie = false;
+    } else if (count === maxVotes) {
+      tie = true;
+    }
+  }
+
+  if (tie) eliminatedId = null;
+
+  if (eliminatedId) {
+    const player = await prisma.player.findFirst({
+      where: { userId: eliminatedId, roomId }
+    });
+    if (player) {
+      await prisma.player.update({
+        where: { id: player.id },
+        data: { isAlive: false }
+      });
+    }
+  }
+
+  game.votes = {};
+
+  const players = await prisma.player.findMany({
+    where: { roomId },
+    include: { user: { select: { id: true, nickname: true } } }
+  });
+
+  const eliminatedPlayer = eliminatedId ? players.find(p => p.userId === eliminatedId) : null;
+
+  io.to(`room:${roomId}`).emit('vote-result', {
+    eliminatedId,
+    eliminatedNickname: eliminatedPlayer ? eliminatedPlayer.user.nickname : null,
+    tie,
+    voteCounts,
+    players: players.map(p => ({
+      id: p.user.id,
+      nickname: p.user.nickname,
+      isAlive: p.isAlive,
+      role: p.role
+    }))
+  });
+
+  const winner = checkWinCondition(players);
+
   if (winner) {
-    await endGame(io, roomId, winner, players);
+    setTimeout(async () => {
+      await endGame(io, roomId, winner, players);
+    }, RESULT_DELAY);
     return;
   }
 
-  game.phase = 'night';
-  game.votes = {};
-
   setTimeout(() => {
+    game.phase = 'night';
+    game.startTime = Date.now();
+    game.votes = {};
+
     io.to(`room:${roomId}`).emit('phase-change', {
       phase: 'night',
-      dayNumber: game.dayNumber
+      dayNumber: game.dayNumber,
+      timeLeft: NIGHT_TIMEOUT / 1000,
+      players: players.map(p => ({
+        id: p.user.id,
+        nickname: p.user.nickname,
+        isAlive: p.isAlive
+      }))
     });
-  }, 3000);
+
+    startNightTimer(io, roomId, game);
+  }, RESULT_DELAY);
 }
 
-async function checkWinCondition(roomId, players) {
-  const alivePlayers = players.filter(p => p.isAlive);
-  const mafiaCount = alivePlayers.filter(p => p.role === 'mafia').length;
-  const townCount = alivePlayers.filter(p => p.role !== 'mafia').length;
+function checkWinCondition(players) {
+  const alive = players.filter(p => p.isAlive);
+  const mafiaCount = alive.filter(p => p.role === 'mafia').length;
+  const townCount = alive.filter(p => p.role !== 'mafia').length;
 
-  if (mafiaCount === 0) {
-    return 'town';
-  }
-
-  if (mafiaCount >= townCount) {
-    return 'mafia';
-  }
-
+  if (mafiaCount === 0) return 'town';
+  if (mafiaCount >= townCount) return 'mafia';
   return null;
 }
 
@@ -416,6 +487,10 @@ async function endGame(io, roomId, winner, players) {
     where: { id: roomId },
     data: { status: 'finished' }
   });
+
+  const game = games.get(roomId);
+  if (game && game.timer) clearTimeout(game.timer);
+  games.delete(roomId);
 
   for (const p of players) {
     const isWinner = (winner === 'town' && p.role !== 'mafia') || (winner === 'mafia' && p.role === 'mafia');
@@ -428,8 +503,6 @@ async function endGame(io, roomId, winner, players) {
       }
     });
   }
-
-  games.delete(roomId);
 
   io.to(`room:${roomId}`).emit('game-ended', {
     winner,
@@ -448,19 +521,10 @@ function assignRoles(playerCount, room) {
   const dCount = room.doctorCount || 1;
   const roles = [];
 
-  for (let i = 0; i < mCount; i++) {
-    roles.push('mafia');
-  }
-  for (let i = 0; i < cCount; i++) {
-    roles.push('commissioner');
-  }
-  for (let i = 0; i < dCount; i++) {
-    roles.push('doctor');
-  }
-
-  while (roles.length < playerCount) {
-    roles.push('civilian');
-  }
+  for (let i = 0; i < mCount; i++) roles.push('mafia');
+  for (let i = 0; i < cCount; i++) roles.push('commissioner');
+  for (let i = 0; i < dCount; i++) roles.push('doctor');
+  while (roles.length < playerCount) roles.push('civilian');
 
   for (let i = roles.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
