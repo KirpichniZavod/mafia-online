@@ -1,6 +1,7 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const { authMiddleware, adminMiddleware } = require('../middleware/auth');
+const log = require('../logger');
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -9,28 +10,28 @@ router.use(authMiddleware);
 router.use(adminMiddleware);
 
 router.get('/users', async (req, res) => {
+  const ip = log.getClientIP(req);
+  log.auth.adminAction(req.user.nickname, 'VIEW USERS', 'all', ip);
   try {
     const users = await prisma.user.findMany({
       select: {
-        id: true,
-        nickname: true,
-        login: true,
-        isAdmin: true,
-        isBanned: true,
-        createdAt: true
+        id: true, nickname: true, login: true,
+        isAdmin: true, isBanned: true, createdAt: true,
+        wins: true, losses: true, gamesPlayed: true
       }
     });
     res.json(users);
   } catch (error) {
-    console.error('Get users error:', error);
+    log.log('admin', log.ICONS.error, `GET USERS ERROR: ${error.message}`);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
 router.post('/ban/:userId', async (req, res) => {
+  const ip = log.getClientIP(req);
   try {
     const { userId } = req.params;
-    
+
     const user = await prisma.user.findUnique({
       where: { id: parseInt(userId) }
     });
@@ -40,51 +41,53 @@ router.post('/ban/:userId', async (req, res) => {
     }
 
     if (user.isAdmin) {
+      log.log('admin', log.ICONS.warn, `BAN BLOCKED — cannot ban admin ${user.nickname}`);
       return res.status(400).json({ error: 'Cannot ban admin' });
     }
 
-    const updatedUser = await prisma.user.update({
+    await prisma.user.update({
       where: { id: parseInt(userId) },
       data: { isBanned: true }
     });
 
-    res.json({ message: 'User banned', user: { id: updatedUser.id, nickname: updatedUser.nickname } });
+    log.auth.adminAction(req.user.nickname, 'BAN', user.nickname, ip);
+
+    res.json({ message: 'User banned', user: { id: user.id, nickname: user.nickname } });
   } catch (error) {
-    console.error('Ban error:', error);
+    log.log('admin', log.ICONS.error, `BAN ERROR: ${error.message}`);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
 router.post('/unban/:userId', async (req, res) => {
+  const ip = log.getClientIP(req);
   try {
     const { userId } = req.params;
-    
+
     const updatedUser = await prisma.user.update({
       where: { id: parseInt(userId) },
       data: { isBanned: false }
     });
 
+    log.auth.adminAction(req.user.nickname, 'UNBAN', updatedUser.nickname, ip);
+
     res.json({ message: 'User unbanned', user: { id: updatedUser.id, nickname: updatedUser.nickname } });
   } catch (error) {
-    console.error('Unban error:', error);
+    log.log('admin', log.ICONS.error, `UNBAN ERROR: ${error.message}`);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
 router.get('/room/:roomId/roles', async (req, res) => {
+  const ip = log.getClientIP(req);
   try {
     const { roomId } = req.params;
-    
+
+    log.auth.adminAction(req.user.nickname, 'VIEW ROLES', `room #${roomId}`, ip);
+
     const players = await prisma.player.findMany({
       where: { roomId: parseInt(roomId) },
-      include: {
-        user: {
-          select: {
-            id: true,
-            nickname: true
-          }
-        }
-      }
+      include: { user: { select: { id: true, nickname: true } } }
     });
 
     const roles = players.map(p => ({
@@ -96,7 +99,7 @@ router.get('/room/:roomId/roles', async (req, res) => {
 
     res.json(roles);
   } catch (error) {
-    console.error('Get roles error:', error);
+    log.log('admin', log.ICONS.error, `VIEW ROLES ERROR: ${error.message}`);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

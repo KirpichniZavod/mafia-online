@@ -1,4 +1,5 @@
 const { PrismaClient } = require('@prisma/client');
+const log = require('../logger');
 
 const prisma = new PrismaClient();
 
@@ -54,6 +55,8 @@ function gameHandler(io, socket, prisma) {
       });
 
       io.to(`room:${roomId}`).emit('game-started', { roomId });
+
+      log.game.start(roomId, room.players.length, roles);
 
       io.to(`room:${roomId}`).emit('phase-change', {
         phase: 'night',
@@ -122,6 +125,12 @@ function gameHandler(io, socket, prisma) {
       game.nightActions[socket.user.id] = { type: 'kill', targetId };
       game.nightPlayers.add(socket.user.id);
 
+      const targetPlayer = await prisma.player.findFirst({
+        where: { userId: targetId, roomId },
+        include: { user: { select: { nickname: true } } }
+      });
+      log.game.mafiaKill(socket.user.nickname, targetPlayer?.user?.nickname || targetId, roomId);
+
       callback({ success: true });
 
       io.to(`room:${roomId}`).emit('action-received', {
@@ -157,6 +166,9 @@ function gameHandler(io, socket, prisma) {
       const isMafia = target.role === 'mafia';
       socket.emit('check-result', { targetId, isMafia });
 
+      const targetUser = await prisma.user.findUnique({ where: { id: targetId }, select: { nickname: true } });
+      log.game.commissionerCheck(socket.user.nickname, targetUser?.nickname || targetId, isMafia, roomId);
+
       game.nightActions[socket.user.id] = { type: 'check', targetId };
       game.nightPlayers.add(socket.user.id);
 
@@ -181,6 +193,9 @@ function gameHandler(io, socket, prisma) {
       game.nightActions[socket.user.id] = { type: 'heal', targetId };
       game.nightPlayers.add(socket.user.id);
 
+      const healTarget = await prisma.user.findUnique({ where: { id: targetId }, select: { nickname: true } });
+      log.game.doctorHeal(socket.user.nickname, healTarget?.nickname || targetId, roomId);
+
       callback({ success: true });
       checkNightComplete(io, roomId, game);
     } catch (error) {
@@ -200,6 +215,9 @@ function gameHandler(io, socket, prisma) {
       if (!player) return callback({ error: 'Not alive' });
 
       game.votes[socket.user.id] = targetId;
+
+      const voteTargetUser = targetId ? await prisma.user.findUnique({ where: { id: targetId }, select: { nickname: true } }) : null;
+      log.game.vote(socket.user.nickname, voteTargetUser?.nickname || null, roomId);
 
       const alivePlayers = await prisma.player.findMany({
         where: { roomId, isAlive: true }
@@ -346,6 +364,8 @@ async function processNight(io, roomId, game) {
 
   const killedPlayer = killedId ? updatedPlayers.find(p => p.userId === killedId) : null;
 
+  log.game.nightResult(roomId, killedPlayer?.user?.nickname || null, targetId === healedId && healedId !== null);
+
   io.to(`room:${roomId}`).emit('night-result', {
     killedId,
     killedNickname: killedPlayer ? killedPlayer.user.nickname : null,
@@ -368,6 +388,8 @@ async function processNight(io, roomId, game) {
   game.dayNumber++;
   game.votes = {};
   game.startTime = Date.now();
+
+  log.game.phaseChange(roomId, 'day', game.dayNumber);
 
   io.to(`room:${roomId}`).emit('phase-change', {
     phase: 'day',
@@ -430,6 +452,8 @@ async function processVotes(io, roomId, game) {
 
   const eliminatedPlayer = eliminatedId ? players.find(p => p.userId === eliminatedId) : null;
 
+  log.game.voteResult(roomId, eliminatedPlayer?.user?.nickname || null, tie);
+
   io.to(`room:${roomId}`).emit('vote-result', {
     eliminatedId,
     eliminatedNickname: eliminatedPlayer ? eliminatedPlayer.user.nickname : null,
@@ -457,6 +481,8 @@ async function processVotes(io, roomId, game) {
     game.startTime = Date.now();
     game.votes = {};
 
+    log.game.phaseChange(roomId, 'night', game.dayNumber);
+
     io.to(`room:${roomId}`).emit('phase-change', {
       phase: 'night',
       dayNumber: game.dayNumber,
@@ -483,6 +509,8 @@ function checkWinCondition(players) {
 }
 
 async function endGame(io, roomId, winner, players) {
+  log.game.end(roomId, winner);
+
   await prisma.room.update({
     where: { id: roomId },
     data: { status: 'finished' }

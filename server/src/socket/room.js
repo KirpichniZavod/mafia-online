@@ -1,4 +1,5 @@
 const { PrismaClient } = require('@prisma/client');
+const log = require('../logger');
 
 const prisma = new PrismaClient();
 
@@ -14,10 +15,7 @@ function roomHandler(io, socket, prisma) {
       }
 
       const existingRoom = await prisma.room.findFirst({
-        where: {
-          hostId: socket.user.id,
-          status: 'waiting'
-        }
+        where: { hostId: socket.user.id, status: 'waiting' }
       });
 
       if (existingRoom) {
@@ -37,10 +35,7 @@ function roomHandler(io, socket, prisma) {
       });
 
       await prisma.player.create({
-        data: {
-          userId: socket.user.id,
-          roomId: room.id
-        }
+        data: { userId: socket.user.id, roomId: room.id }
       });
 
       socket.join(`room:${room.id}`);
@@ -50,10 +45,12 @@ function roomHandler(io, socket, prisma) {
         host: socket.user.id
       });
 
+      log.room.create(socket.user.nickname, room.id, name, { maxPlayers, mafiaCount, commissionerCount, doctorCount });
+
       callback({ success: true, roomId: room.id });
       io.emit('room-created', { roomId: room.id, name, host: socket.user.nickname });
     } catch (error) {
-      console.error('Create room error:', error);
+      log.log('room', log.ICONS.error, `CREATE ERROR: ${error.message}`);
       callback({ error: 'Failed to create room' });
     }
   });
@@ -68,12 +65,14 @@ function roomHandler(io, socket, prisma) {
       });
 
       if (!room) {
+        log.log('room', log.ICONS.error, `JOIN FAILED — room #${roomId} not found`);
         return callback({ error: 'Room not found' });
       }
 
       const alreadyJoined = room.players.some(p => p.userId === socket.user.id);
 
       if (alreadyJoined) {
+        log.room.rejoin(socket.user.nickname, roomId);
         socket.join(`room:${room.id}`);
 
         const roomData = activeRooms.get(room.id) || { players: [], host: room.hostId };
@@ -100,18 +99,17 @@ function roomHandler(io, socket, prisma) {
       }
 
       if (room.status !== 'waiting') {
+        log.log('room', log.ICONS.warn, `JOIN BLOCKED — ${socket.user.nickname} → #${roomId} (game started)`);
         return callback({ error: 'Game already started' });
       }
 
       if (room.players.length >= room.maxPlayers) {
+        log.log('room', log.ICONS.warn, `JOIN BLOCKED — ${socket.user.nickname} → #${roomId} (full)`);
         return callback({ error: 'Room is full' });
       }
 
       await prisma.player.create({
-        data: {
-          userId: socket.user.id,
-          roomId: room.id
-        }
+        data: { userId: socket.user.id, roomId: room.id }
       });
 
       socket.join(`room:${room.id}`);
@@ -125,6 +123,8 @@ function roomHandler(io, socket, prisma) {
         include: { user: { select: { id: true, nickname: true } } }
       });
 
+      log.room.join(socket.user.nickname, roomId);
+
       io.to(`room:${room.id}`).emit('room-updated', {
         roomId: room.id,
         players: players.map(p => ({
@@ -136,7 +136,7 @@ function roomHandler(io, socket, prisma) {
 
       callback({ success: true });
     } catch (error) {
-      console.error('Join room error:', error);
+      log.log('room', log.ICONS.error, `JOIN ERROR: ${error.message}`);
       callback({ error: 'Failed to join room' });
     }
   });
@@ -145,11 +145,10 @@ function roomHandler(io, socket, prisma) {
     try {
       const { roomId } = data;
 
+      log.room.leave(socket.user.nickname, roomId);
+
       await prisma.player.deleteMany({
-        where: {
-          userId: socket.user.id,
-          roomId: roomId
-        }
+        where: { userId: socket.user.id, roomId: roomId }
       });
 
       socket.leave(`room:${roomId}`);
@@ -160,10 +159,12 @@ function roomHandler(io, socket, prisma) {
         if (roomData.players.length === 0) {
           activeRooms.delete(roomId);
           await prisma.room.delete({ where: { id: roomId } });
+          log.room.delete(roomId);
           io.emit('room-deleted', { roomId });
         } else {
           if (roomData.host === socket.user.id) {
             roomData.host = roomData.players[0];
+            log.log('room', log.ICONS.room, `HOST TRANSFER #${roomId} → new host: ${roomData.host}`);
           }
           const players = await prisma.player.findMany({
             where: { roomId },
@@ -182,7 +183,7 @@ function roomHandler(io, socket, prisma) {
 
       callback({ success: true });
     } catch (error) {
-      console.error('Leave room error:', error);
+      log.log('room', log.ICONS.error, `LEAVE ERROR: ${error.message}`);
       callback({ error: 'Failed to leave room' });
     }
   });
@@ -191,9 +192,7 @@ function roomHandler(io, socket, prisma) {
     try {
       const rooms = await prisma.room.findMany({
         where: { status: 'waiting' },
-        include: {
-          _count: { select: { players: true } }
-        }
+        include: { _count: { select: { players: true } } }
       });
 
       const roomList = rooms.map(room => ({
@@ -205,7 +204,6 @@ function roomHandler(io, socket, prisma) {
 
       callback({ rooms: roomList });
     } catch (error) {
-      console.error('Get rooms error:', error);
       callback({ error: 'Failed to get rooms' });
     }
   });
@@ -213,8 +211,9 @@ function roomHandler(io, socket, prisma) {
   socket.on('chat-message', async (data) => {
     try {
       const { roomId, message } = data;
-
       if (!message || message.length > 200) return;
+
+      log.log('room', log.ICONS.info, `CHAT #${roomId} ${socket.user.nickname}: ${message.substring(0, 50)}`);
 
       io.to(`room:${roomId}`).emit('chat-message', {
         nickname: socket.user.nickname,
@@ -222,7 +221,7 @@ function roomHandler(io, socket, prisma) {
         timestamp: Date.now()
       });
     } catch (error) {
-      console.error('Chat message error:', error);
+      log.log('room', log.ICONS.error, `CHAT ERROR: ${error.message}`);
     }
   });
 }

@@ -4,6 +4,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
 const { PrismaClient } = require('@prisma/client');
+const log = require('./logger');
 
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
@@ -24,6 +25,11 @@ const io = new Server(server, {
 app.use(cors());
 app.use(express.json());
 
+app.use((req, res, next) => {
+  log.httpRequest(req, res);
+  next();
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/profile', profileRoutes);
@@ -38,7 +44,7 @@ const PORT = process.env.PORT || 3001;
 
 async function seedAdmin() {
   const bcrypt = require('bcryptjs');
-  
+
   const adminExists = await prisma.user.findUnique({
     where: { login: 'Anubis69' }
   });
@@ -53,22 +59,31 @@ async function seedAdmin() {
         isAdmin: true
       }
     });
-    console.log('Admin account created: Anubis69 / AnubisTheGod');
+    log.log('auth', log.ICONS.admin, 'Admin account seeded: Anubis69 / AnubisTheGod');
+  } else {
+    log.log('auth', log.ICONS.admin, 'Admin account exists: Anubis69');
   }
 }
 
 async function start() {
   try {
     await prisma.$connect();
-    console.log('Database connected');
-    
+    log.log('db', log.ICONS.db, 'Database connected');
+
     await seedAdmin();
-    
+
     server.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
+      log.log('server', log.ICONS.success, `Server running on port ${PORT}`);
+      console.log('');
+      console.log(`${log.COLORS.cyan}╔══════════════════════════════════════════╗${log.COLORS.reset}`);
+      console.log(`${log.COLORS.cyan}║${log.COLORS.reset}  🎮 Mafia Online Server                  ${log.COLORS.cyan}║${log.COLORS.reset}`);
+      console.log(`${log.COLORS.cyan}║${log.COLORS.reset}  Port: ${PORT}                              ${log.COLORS.cyan}║${log.COLORS.reset}`);
+      console.log(`${log.COLORS.cyan}║${log.COLORS.reset}  Client: ${process.env.CLIENT_URL || 'not set'}  ${log.COLORS.cyan}║${log.COLORS.reset}`);
+      console.log(`${log.COLORS.cyan}╚══════════════════════════════════════════╝${log.COLORS.reset}`);
+      console.log('');
     });
   } catch (error) {
-    console.error('Failed to start server:', error);
+    log.log('server', log.ICONS.error, 'Failed to start server', { error: error.message });
     process.exit(1);
   }
 }
