@@ -1,9 +1,12 @@
 const jwt = require('jsonwebtoken');
+const { PrismaClient } = require('@prisma/client');
 const log = require('../logger');
 const roomHandler = require('./room');
 const gameHandler = require('./game');
 
-function socketHandler(io, prisma) {
+const prisma = new PrismaClient();
+
+function socketHandler(io) {
   io.use(async (socket, next) => {
     const token = socket.handshake.auth.token;
 
@@ -15,6 +18,25 @@ function socketHandler(io, prisma) {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       socket.user = decoded;
+
+      const user = await prisma.user.findUnique({
+        where: { id: decoded.id },
+        select: { isBanned: true, banReason: true, banUntil: true }
+      });
+
+      if (user && user.isBanned) {
+        if (user.banUntil && new Date(user.banUntil) < new Date()) {
+          await prisma.user.update({
+            where: { id: decoded.id },
+            data: { isBanned: false, banReason: null, banUntil: null }
+          });
+        } else {
+          const reason = user.banReason || 'Аккаунт заблокирован';
+          log.log('socket', log.ICONS.warn, 'BANNED USER BLOCKED: ' + decoded.nickname + ' — ' + reason);
+          return next(new Error(reason));
+        }
+      }
+
       next();
     } catch (error) {
       log.log('socket', log.ICONS.error, 'Connection rejected — invalid token');
@@ -30,9 +52,9 @@ function socketHandler(io, prisma) {
     });
 
     socket.on('join-socket-room', (data) => {
-      const { roomId } = data;
-      socket.join(`room:${roomId}`);
-      log.log('socket', log.ICONS.room, `${socket.user.nickname} joined socket room #${roomId}`);
+      const roomId = parseInt(data.roomId);
+      socket.join('room:' + roomId);
+      log.log('socket', log.ICONS.room, socket.user.nickname + ' joined socket room #' + roomId);
     });
 
     roomHandler(io, socket, prisma);

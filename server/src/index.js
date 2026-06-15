@@ -38,7 +38,7 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-socketHandler(io, prisma);
+socketHandler(io);
 
 const PORT = process.env.PORT || 3001;
 

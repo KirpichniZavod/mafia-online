@@ -8,6 +8,8 @@ function Admin({ user, token }) {
   const [banModal, setBanModal] = useState(null);
   const [banReason, setBanReason] = useState('');
   const [banDuration, setBanDuration] = useState('permanent');
+  const [banCustom, setBanCustom] = useState('');
+  const [banUnit, setBanUnit] = useState('m');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -37,6 +39,16 @@ function Admin({ user, token }) {
 
   const handleBan = async () => {
     if (!banModal) return;
+
+    let duration = banDuration;
+    if (banDuration === 'custom' && banCustom) {
+      const val = parseInt(banCustom);
+      if (!isNaN(val) && val > 0) {
+        const multipliers = { s: 1, m: 60, h: 3600, d: 86400 };
+        duration = String(val * (multipliers[banUnit] || 60));
+      }
+    }
+
     const res = await fetch(`${config.serverUrl}/api/admin/ban/${banModal.id}`, {
       method: 'POST',
       headers,
@@ -220,9 +232,31 @@ function Admin({ user, token }) {
                 <option value="3600">1 час</option>
                 <option value="86400">1 день</option>
                 <option value="604800">7 дней</option>
+                <option value="custom">Свой вариант</option>
                 <option value="permanent">Навсегда</option>
               </select>
             </div>
+
+            {banDuration === 'custom' && (
+              <div className="form-group">
+                <label className="form-label">Количество</label>
+                <div className="flex gap-1">
+                  <input
+                    type="number" className="input" value={banCustom}
+                    onChange={(e) => setBanCustom(e.target.value)}
+                    placeholder="Введите число"
+                    min="1"
+                    style={{ flex: 2 }}
+                  />
+                  <select className="input" value={banUnit} onChange={(e) => setBanUnit(e.target.value)} style={{ flex: 1 }}>
+                    <option value="s">секунд</option>
+                    <option value="m">минут</option>
+                    <option value="h">часов</option>
+                    <option value="d">дней</option>
+                  </select>
+                </div>
+              </div>
+            )}
 
             <div className="flex gap-1">
               <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => { setBanModal(null); setBanReason(''); }}>
