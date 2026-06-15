@@ -398,7 +398,16 @@ function Game({ user, token }) {
                   opacity: p.isAlive ? 1 : 0.6
                 }}>
                   <div className="flex-between">
-                    <span>{p.nickname}{p.id === user.id ? ' (Вы)' : ''}</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      {p.avatar ? (
+                        p.avatar.startsWith('/') ? (
+                          <img src={config.serverUrl + p.avatar} alt="" style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }} />
+                        ) : (
+                          <span style={{ fontSize: '1.2rem' }}>{p.avatar}</span>
+                        )
+                      ) : null}
+                      {p.nickname}{p.id === user.id ? ' (Вы)' : ''}
+                    </span>
                     {!p.isAlive && <span>💀</span>}
                   </div>
                 </div>

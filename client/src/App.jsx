@@ -6,6 +6,7 @@ import Lobby from './pages/Lobby';
 import Game from './pages/Game';
 import Profile from './pages/Profile';
 import Privacy from './pages/Privacy';
+import Rules from './pages/Rules';
 import Admin from './pages/Admin';
 
 function App() {
@@ -123,6 +124,7 @@ function App() {
               }
             />
             <Route path="/privacy" element={<Privacy />} />
+            <Route path="/rules" element={<Rules />} />
             <Route
               path="/admin"
               element={
@@ -135,9 +137,7 @@ function App() {
 
         <footer className="footer">
           <Link to="/privacy" className="footer-link">Политика конфиденциальности</Link>
-          <button className="footer-link" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
-            Правила поведения
-          </button>
+          <Link to="/rules" className="footer-link">Правила поведения</Link>
         </footer>
       </div>
     </Router>

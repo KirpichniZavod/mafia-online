@@ -99,12 +99,13 @@ function gameHandler(io, socket, prisma) {
       const rid = parseInt(data.roomId);
       const players = await prisma.player.findMany({
         where: { roomId: rid },
-        include: { user: { select: { id: true, nickname: true } } }
+        include: { user: { select: { id: true, nickname: true, avatar: true } } }
       });
       callback({
         players: players.map(p => ({
           id: p.user.id,
           nickname: p.user.nickname,
+          avatar: p.user.avatar,
           role: p.role,
           isAlive: p.isAlive
         }))

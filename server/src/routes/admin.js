@@ -168,4 +168,55 @@ router.get('/room/:roomId/roles', async (req, res) => {
   }
 });
 
+router.post('/kick/:roomId/:userId', async (req, res) => {
+  const ip = log.getClientIP(req);
+  try {
+    const { roomId, userId } = req.params;
+
+    await prisma.player.deleteMany({
+      where: { roomId: parseInt(roomId), userId: parseInt(userId) }
+    });
+
+    const user = await prisma.user.findUnique({ where: { id: parseInt(userId) }, select: { nickname: true } });
+    log.auth.adminAction(req.user.nickname, 'KICK', `${user?.nickname} from room #${roomId}`, ip);
+
+    res.json({ message: 'Player kicked' });
+  } catch (error) {
+    log.log('admin', log.ICONS.error, `KICK ERROR: ${error.message}`);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.post('/make-admin/:userId', async (req, res) => {
+  const ip = log.getClientIP(req);
+  try {
+    const { userId } = req.params;
+    const user = await prisma.user.update({
+      where: { id: parseInt(userId) },
+      data: { isAdmin: true }
+    });
+    log.auth.adminAction(req.user.nickname, 'MAKE ADMIN', user.nickname, ip);
+    res.json({ message: 'User is now admin', user: { id: user.id, nickname: user.nickname } });
+  } catch (error) {
+    log.log('admin', log.ICONS.error, `MAKE ADMIN ERROR: ${error.message}`);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.post('/remove-admin/:userId', async (req, res) => {
+  const ip = log.getClientIP(req);
+  try {
+    const { userId } = req.params;
+    const user = await prisma.user.update({
+      where: { id: parseInt(userId) },
+      data: { isAdmin: false }
+    });
+    log.auth.adminAction(req.user.nickname, 'REMOVE ADMIN', user.nickname, ip);
+    res.json({ message: 'Admin removed', user: { id: user.id, nickname: user.nickname } });
+  } catch (error) {
+    log.log('admin', log.ICONS.error, `REMOVE ADMIN ERROR: ${error.message}`);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 module.exports = router;

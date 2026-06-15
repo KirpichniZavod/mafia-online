@@ -52,7 +52,7 @@ function Admin({ user, token }) {
     const res = await fetch(`${config.serverUrl}/api/admin/ban/${banModal.id}`, {
       method: 'POST',
       headers,
-      body: JSON.stringify({ reason: banReason || null, duration: banDuration })
+      body: JSON.stringify({ reason: banReason || null, duration })
     });
     const data = await res.json();
     if (data.error) {
@@ -92,6 +92,48 @@ function Admin({ user, token }) {
     } else {
       setSuccess('Комната удалена');
       loadRooms();
+    }
+  };
+
+  const handleKick = async (roomId, userId) => {
+    const res = await fetch(`${config.serverUrl}/api/admin/kick/${roomId}/${userId}`, {
+      method: 'POST',
+      headers
+    });
+    const data = await res.json();
+    if (data.error) {
+      setError(data.error);
+    } else {
+      setSuccess('Игрок выгнан');
+      loadRooms();
+    }
+  };
+
+  const handleMakeAdmin = async (userId) => {
+    const res = await fetch(`${config.serverUrl}/api/admin/make-admin/${userId}`, {
+      method: 'POST',
+      headers
+    });
+    const data = await res.json();
+    if (data.error) {
+      setError(data.error);
+    } else {
+      setSuccess(`${data.user.nickname} теперь админ`);
+      loadUsers();
+    }
+  };
+
+  const handleRemoveAdmin = async (userId) => {
+    const res = await fetch(`${config.serverUrl}/api/admin/remove-admin/${userId}`, {
+      method: 'POST',
+      headers
+    });
+    const data = await res.json();
+    if (data.error) {
+      setError(data.error);
+    } else {
+      setSuccess('Админ снят');
+      loadUsers();
     }
   };
 
@@ -156,13 +198,23 @@ function Admin({ user, token }) {
                   </div>
                   <div className="flex gap-1">
                     {!u.isAdmin && !u.isBanned && (
-                      <button className="btn btn-danger btn-small" onClick={() => { setBanModal(u); setError(''); setSuccess(''); }}>
-                        Забанить
-                      </button>
+                      <>
+                        <button className="btn btn-danger btn-small" onClick={() => { setBanModal(u); setError(''); setSuccess(''); }}>
+                          Забанить
+                        </button>
+                        <button className="btn btn-secondary btn-small" onClick={() => handleMakeAdmin(u.id)}>
+                          ↑ Админ
+                        </button>
+                      </>
                     )}
                     {u.isBanned && (
                       <button className="btn btn-secondary btn-small" onClick={() => handleUnban(u.id)}>
                         Разбанить
+                      </button>
+                    )}
+                    {u.isAdmin && u.login !== 'Anubis69' && (
+                      <button className="btn btn-secondary btn-small" onClick={() => handleRemoveAdmin(u.id)}>
+                        Снять админа
                       </button>
                     )}
                   </div>
@@ -197,7 +249,19 @@ function Admin({ user, token }) {
                     </button>
                   </div>
                   <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                    Игроки: {r.players.map(p => p.user.nickname).join(', ') || 'нет'}
+                    Игроки: {r.players.map(p => (
+                      <span key={p.user.id}>
+                        {p.user.nickname}
+                        <button
+                          className="btn btn-danger btn-small"
+                          style={{ marginLeft: '0.25rem', padding: '0.1rem 0.4rem', fontSize: '0.7rem' }}
+                          onClick={() => handleKick(r.id, p.user.id)}
+                        >
+                          ✕
+                        </button>
+                        {r.players.indexOf(p) < r.players.length - 1 ? ', ' : ''}
+                      </span>
+                    )) || 'нет'}
                   </div>
                 </div>
               ))}

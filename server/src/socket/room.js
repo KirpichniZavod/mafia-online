@@ -82,7 +82,7 @@ function roomHandler(io, socket, db) {
 
         const players = await db.player.findMany({
           where: { roomId: roomId },
-          include: { user: { select: { id: true, nickname: true } } }
+          include: { user: { select: { id: true, nickname: true, avatar: true } } }
         });
 
         const playerList = players.map(p => ({
@@ -117,7 +117,7 @@ function roomHandler(io, socket, db) {
 
       const players = await db.player.findMany({
         where: { roomId: roomId },
-        include: { user: { select: { id: true, nickname: true } } }
+        include: { user: { select: { id: true, nickname: true, avatar: true } } }
       });
 
       const playerList = players.map(p => ({
@@ -164,7 +164,7 @@ function roomHandler(io, socket, db) {
           }
           const players = await db.player.findMany({
             where: { roomId: roomId },
-            include: { user: { select: { id: true, nickname: true } } }
+            include: { user: { select: { id: true, nickname: true, avatar: true } } }
           });
           const playerList = players.map(p => ({
             id: p.user.id,
