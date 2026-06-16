@@ -9,20 +9,37 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.mafia.online.data.model.AuthResponse
+import com.mafia.online.data.api.ApiService
 import com.mafia.online.data.model.User
+import com.mafia.online.data.repository.AuthRepository
 import com.mafia.online.ui.screens.banned.BannedScreen
 import com.mafia.online.ui.theme.*
+import kotlinx.coroutines.launch
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 @Composable
 fun LoginScreen(
     onLogin: (User, String) -> Unit,
     onRegister: () -> Unit
 ) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    val api = remember {
+        Retrofit.Builder()
+            .baseUrl("https://mafia-server-eljy.onrender.com/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(ApiService::class.java)
+    }
+    val repository = remember { AuthRepository(api, context) }
+
     var login by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var error by remember { mutableStateOf("") }
@@ -102,10 +119,26 @@ fun LoginScreen(
 
                 Button(
                     onClick = {
+                        if (login.isBlank() || password.isBlank()) return@Button
                         loading = true
                         error = ""
-                        // TODO: Call API
-                        loading = false
+                        scope.launch {
+                            try {
+                                val response = api.login(mapOf("login" to login, "password" to password))
+                                repository.saveToken(response.token)
+                                onLogin(response.user, response.token)
+                            } catch (e: retrofit2.HttpException) {
+                                val body = e.response()?.errorBody()?.string()
+                                if (body != null && body.contains("banned")) {
+                                    error = "Вы забанены"
+                                } else {
+                                    error = "Неверный логин или пароль"
+                                }
+                            } catch (e: Exception) {
+                                error = "Ошибка подключения"
+                            }
+                            loading = false
+                        }
                     },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(containerColor = AccentPrimary),
