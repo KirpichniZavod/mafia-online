@@ -1,1 +1,160 @@
+Executing tasks: [:app:assembleDebug, :app:assembleDebugUnitTest, :app:assembleDebugAndroidTest] in project D:\game\android
+
+Starting Gradle Daemon...
+Gradle Daemon started in 1 s 259 ms
+> Task :app:createDebugVariantModel UP-TO-DATE
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :app:checkKotlinGradlePluginConfigurationErrors
 > Task :app:checkDebugAarMetadata FAILED
+> Task :app:generateDebugResValues UP-TO-DATE
+> Task :app:mapDebugSourceSetPaths UP-TO-DATE
+> Task :app:generateDebugResources UP-TO-DATE
+> Task :app:mergeDebugResources UP-TO-DATE
+> Task :app:packageDebugResources UP-TO-DATE
+> Task :app:parseDebugLocalResources UP-TO-DATE
+> Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksDebug UP-TO-DATE
+> Task :app:processDebugMainManifest UP-TO-DATE
+> Task :app:processDebugManifest UP-TO-DATE
+> Task :app:javaPreCompileDebug UP-TO-DATE
+> Task :app:mergeDebugShaders UP-TO-DATE
+> Task :app:compileDebugShaders NO-SOURCE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :app:mergeDebugAssets UP-TO-DATE
+> Task :app:compressDebugAssets UP-TO-DATE
+> Task :app:desugarDebugFileDependencies UP-TO-DATE
+> Task :app:checkDebugDuplicateClasses UP-TO-DATE
+> Task :app:mergeDebugJniLibFolders UP-TO-DATE
+> Task :app:mergeLibDexDebug
+> Task :app:mergeDebugNativeLibs NO-SOURCE
+> Task :app:stripDebugDebugSymbols NO-SOURCE
+> Task :app:validateSigningDebug
+> Task :app:writeDebugAppMetadata
+> Task :app:writeDebugSigningConfigVersions
+> Task :app:assembleDebugUnitTest UP-TO-DATE
+> Task :app:preDebugAndroidTestBuild SKIPPED
+> Task :app:generateDebugAndroidTestResValues
+> Task :app:checkDebugAndroidTestAarMetadata
+> Task :app:mapDebugAndroidTestSourceSetPaths
+> Task :app:generateDebugAndroidTestResources
+> Task :app:mergeDebugAndroidTestResources
+> Task :app:processDebugAndroidTestManifest
+Download https://dl.google.com/dl/android/maven2/com/android/tools/build/aapt2/8.2.2-10154469/aapt2-8.2.2-10154469.pom, took 943 ms
+Download https://dl.google.com/dl/android/maven2/com/android/tools/build/aapt2/8.2.2-10154469/aapt2-8.2.2-10154469-windows.jar, took 549 ms
+> Task :app:mergeDebugAndroidTestShaders
+> Task :app:compileDebugAndroidTestShaders NO-SOURCE
+> Task :app:generateDebugAndroidTestAssets UP-TO-DATE
+> Task :app:mergeDebugAndroidTestAssets
+> Task :app:compressDebugAndroidTestAssets
+> Task :app:javaPreCompileDebugAndroidTest
+> Task :app:desugarDebugAndroidTestFileDependencies
+> Task :app:checkDebugAndroidTestDuplicateClasses
+> Task :app:mergeDebugAndroidTestJniLibFolders
+> Task :app:mergeExtDexDebugAndroidTest
+> Task :app:mergeDebugAndroidTestNativeLibs NO-SOURCE
+> Task :app:stripDebugAndroidTestDebugSymbols NO-SOURCE
+> Task :app:validateSigningDebugAndroidTest
+> Task :app:mergeLibDexDebugAndroidTest
+> Task :app:writeDebugAndroidTestSigningConfigVersions
+> Task :app:processDebugManifestForPackage
+> Task :app:processDebugAndroidTestResources
+> Task :app:mergeExtDexDebug
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:checkDebugAarMetadata'.
+> Configuration `:app:debugRuntimeClasspath` contains AndroidX dependencies, but the `android.useAndroidX` property is not enabled, which may cause runtime issues.
+  Set `android.useAndroidX=true` in the `gradle.properties` file and retry.
+  The following AndroidX dependencies are detected:
+  :app:debugRuntimeClasspath -> androidx.compose.ui:ui-tooling:1.5.4
+  :app:debugRuntimeClasspath -> androidx.compose:compose-bom:2023.10.01 -> androidx.compose.ui:ui-tooling-android:1.5.4
+  :app:debugRuntimeClasspath -> androidx.activity:activity-compose:1.8.1
+  :app:debugRuntimeClasspath -> androidx.navigation:navigation-compose:2.7.5 -> androidx.navigation:navigation-runtime-ktx:2.7.5 -> androidx.navigation:navigation-common-ktx:2.7.5 -> androidx.navigation:navigation-common:2.7.5 -> androidx.navigation:navigation-runtime:2.7.5 -> androidx.activity:activity-ktx:1.8.1
+  :app:debugRuntimeClasspath -> androidx.navigation:navigation-compose:2.7.5 -> androidx.navigation:navigation-runtime-ktx:2.7.5 -> androidx.navigation:navigation-common-ktx:2.7.5 -> androidx.navigation:navigation-common:2.7.5 -> androidx.navigation:navigation-runtime:2.7.5 -> androidx.activity:activity-ktx:1.8.1 -> androidx.activity:activity:1.8.1
+  :app:debugRuntimeClasspath -> androidx.navigation:navigation-compose:2.7.5 -> androidx.navigation:navigation-runtime-ktx:2.7.5 -> androidx.navigation:navigation-common-ktx:2.7.5 -> androidx.navigation:navigation-runtime:2.7.5 -> androidx.navigation:navigation-common:2.7.5 -> androidx.annotation:annotation:1.6.0
+  :app:debugRuntimeClasspath -> androidx.navigation:navigation-compose:2.7.5 -> androidx.navigation:navigation-runtime-ktx:2.7.5 -> androidx.navigation:navigation-common-ktx:2.7.5 -> androidx.navigation:navigation-runtime:2.7.5 -> androidx.navigation:navigation-common:2.7.5 -> androidx.annotation:annotation:1.6.0 -> androidx.annotation:annotation-jvm:1.6.0
+  :app:debugRuntimeClasspath -> androidx.navigation:navigation-compose:2.7.5 -> androidx.navigation:navigation-runtime-ktx:2.7.5 -> androidx.navigation:navigation-common-ktx:2.7.5 -> androidx.navigation:navigation-common:2.7.5 -> androidx.navigation:navigation-runtime:2.7.5 -> androidx.collection:collection:1.1.0
+  :app:debugRuntimeClasspath -> androidx.navigation:navigation-compose:2.7.5 -> androidx.navigation:navigation-runtime-ktx:2.7.5 -> androidx.navigation:navigation-common-ktx:2.7.5 -> androidx.navigation:navigation-common:2.7.5 -> androidx.navigation:navigation-runtime:2.7.5 -> androidx.activity:activity-ktx:1.8.1 -> androidx.activity:activity:1.8.1 -> androidx.core:core:1.12.0
+  :app:debugRuntimeClasspath -> androidx.navigation:navigation-compose:2.7.5 -> androidx.navigation:navigation-runtime-ktx:2.7.5 -> androidx.navigation:navigation-common-ktx:2.7.5 -> androidx.navigation:navigation-common:2.7.5 -> androidx.navigation:navigation-runtime:2.7.5 -> androidx.annotation:annotation-experimental:1.3.0
+  :app:debugRuntimeClasspath -> androidx.navigation:navigation-compose:2.7.5 -> androidx.navigation:navigation-runtime-ktx:2.7.5 -> androidx.navigation:navigation-common-ktx:2.7.5 -> androidx.navigation:navigation-common:2.7.5 -> androidx.navigation:navigation-runtime:2.7.5 -> androidx.activity:activity-ktx:1.8.1 -> androidx.activity:activity:1.8.1 -> androidx.core:core:1.12.0 -> androidx.concurrent:concurrent-futures:1.1.0
+  :app:debugRuntimeClasspath -> androidx.navigation:navigation-compose:2.7.5 -> androidx.navigation:navigation-runtime-ktx:2.7.5 -> androidx.navigation:navigation-common-ktx:2.7.5 -> androidx.navigation:navigation-common:2.7.5 -> androidx.navigation:navigation-runtime:2.7.5 -> androidx.activity:activity-ktx:1.8.1 -> androidx.activity:activity:1.8.1 -> androidx.core:core:1.12.0 -> androidx.interpolator:interpolator:1.0.0
+  :app:debugRuntimeClasspath -> androidx.compose.material3:material3:1.1.2 -> androidx.lifecycle:lifecycle-runtime:2.6.2
+  :app:debugRuntimeClasspath -> androidx.compose:compose-bom:2023.10.01 -> androidx.compose.foundation:foundation-android:1.5.4 -> androidx.emoji2:emoji2:1.4.0 -> androidx.lifecycle:lifecycle-process:2.6.2 -> androidx.lifecycle:lifecycle-livedata-core:2.6.2 -> androidx.arch.core:core-common:2.2.0
+  :app:debugRuntimeClasspath -> androidx.compose:compose-bom:2023.10.01 -> androidx.compose.foundation:foundation-android:1.5.4 -> androidx.emoji2:emoji2:1.4.0 -> androidx.lifecycle:lifecycle-process:2.6.2 -> androidx.lifecycle:lifecycle-livedata-core:2.6.2 -> androidx.arch.core:core-runtime:2.2.0
+  :app:debugRuntimeClasspath -> androidx.navigation:navigation-compose:2.7.5 -> androidx.navigation:navigation-runtime-ktx:2.7.5 -> androidx.navigation:navigation-common-ktx:2.7.5 -> androidx.navigation:navigation-runtime:2.7.5 -> androidx.navigation:navigation-common:2.7.5 -> androidx.lifecycle:lifecycle-common:2.6.2
+  :app:debugRuntimeClasspath -> androidx.compose.material3:material3:1.1.2 -> androidx.lifecycle:lifecycle-common-java8:2.6.2
+  :app:debugRuntimeClasspath -> androidx.lifecycle:lifecycle-runtime-ktx:2.6.2
+  :app:debugRuntimeClasspath -> androidx.compose.material3:material3:1.1.2 -> androidx.lifecycle:lifecycle-viewmodel:2.6.2
+  :app:debugRuntimeClasspath -> androidx.navigation:navigation-compose:2.7.5 -> androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2
+  :app:debugRuntimeClasspath -> androidx.compose:compose-bom:2023.10.01 -> androidx.compose.runtime:runtime:1.5.4
+  :app:debugRuntimeClasspath -> androidx.compose:compose-bom:2023.10.01 -> androidx.compose.runtime:runtime-android:1.5.4
+  :app:debugRuntimeClasspath -> androidx.compose:compose-bom:2023.10.01 -> androidx.compose.runtime:runtime-saveable:1.5.4
+  :app:debugRuntimeClasspath -> androidx.compose:compose-bom:2023.10.01 -> androidx.compose.runtime:runtime-saveable-android:1.5.4
+  :app:debugRuntimeClasspath -> androidx.compose.ui:ui:1.5.4
+  :app:debugRuntimeClasspath -> androidx.compose:compose-bom:2023.10.01 -> androidx.compose.ui:ui-android:1.5.4
+  :app:debugRuntimeClasspath -> androidx.compose:compose-bom:2023.10.01 -> androidx.compose.ui:ui-android:1.5.4 -> androidx.autofill:autofill:1.0.0
+  :app:debugRuntimeClasspath -> androidx.compose:compose-bom:2023.10.01 -> androidx.compose.ui:ui-geometry:1.5.4
+  :app:debugRuntimeClasspath -> androidx.compose:compose-bom:2023.10.01 -> androidx.compose.ui:ui-geometry-android:1.5.4
+  :app:debugRuntimeClasspath -> androidx.compose:compose-bom:2023.10.01 -> androidx.compose.ui:ui-util:1.5.4
+  :app:debugRuntimeClasspath -> androidx.compose:compose-bom:2023.10.01 -> androidx.compose.ui:ui-util-android:1.5.4
+  :app:debugRuntimeClasspath -> androidx.compose.ui:ui-graphics:1.5.4
+  :app:debugRuntimeClasspath -> androidx.compose:compose-bom:2023.10.01 -> androidx.compose.ui:ui-graphics-android:1.5.4
+  :app:debugRuntimeClasspath -> androidx.compose:compose-bom:2023.10.01 -> androidx.compose.ui:ui-unit:1.5.4
+  :app:debugRuntimeClasspath -> androidx.compose:compose-bom:2023.10.01 -> androidx.compose.ui:ui-unit-android:1.5.4
+  :app:debugRuntimeClasspath -> androidx.compose:compose-bom:2023.10.01 -> androidx.compose.ui:ui-text:1.5.4
+  :app:debugRuntimeClasspath -> androidx.compose:compose-bom:2023.10.01 -> androidx.compose.ui:ui-text-android:1.5.4
+  :app:debugRuntimeClasspath -> androidx.compose:compose-bom:2023.10.01 -> androidx.compose.foundation:foundation-android:1.5.4 -> androidx.emoji2:emoji2:1.4.0
+  :app:debugRuntimeClasspath -> androidx.compose:compose-bom:2023.10.01 -> androidx.compose.foundation:foundation-android:1.5.4 -> androidx.emoji2:emoji2:1.4.0 -> androidx.lifecycle:lifecycle-process:2.6.2
+  :app:debugRuntimeClasspath -> androidx.compose:compose-bom:2023.10.01 -> androidx.compose.foundation:foundation-android:1.5.4 -> androidx.emoji2:emoji2:1.4.0 -> androidx.startup:startup-runtime:1.1.1
+  :app:debugRuntimeClasspath -> androidx.navigation:navigation-compose:2.7.5 -> androidx.navigation:navigation-runtime-ktx:2.7.5 -> androidx.navigation:navigation-common-ktx:2.7.5 -> androidx.navigation:navigation-common:2.7.5 -> androidx.navigation:navigation-runtime:2.7.5 -> androidx.activity:activity-ktx:1.8.1 -> androidx.activity:activity:1.8.1 -> androidx.tracing:tracing:1.0.0
+  :app:debugRuntimeClasspath -> androidx.compose:compose-bom:2023.10.01 -> androidx.compose.foundation:foundation-android:1.5.4 -> androidx.emoji2:emoji2:1.4.0 -> androidx.lifecycle:lifecycle-process:2.6.2 -> androidx.lifecycle:lifecycle-livedata-core:2.6.2
+  :app:debugRuntimeClasspath -> androidx.navigation:navigation-compose:2.7.5 -> androidx.navigation:navigation-runtime-ktx:2.7.5 -> androidx.navigation:navigation-common-ktx:2.7.5 -> androidx.navigation:navigation-runtime:2.7.5 -> androidx.navigation:navigation-common:2.7.5 -> androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2
+  :app:debugRuntimeClasspath -> androidx.navigation:navigation-compose:2.7.5 -> androidx.navigation:navigation-runtime-ktx:2.7.5 -> androidx.navigation:navigation-common-ktx:2.7.5 -> androidx.navigation:navigation-runtime:2.7.5 -> androidx.navigation:navigation-common:2.7.5 -> androidx.lifecycle:lifecycle-viewmodel-savedstate:2.6.2
+  :app:debugRuntimeClasspath -> androidx.core:core-ktx:1.12.0
+  :app:debugRuntimeClasspath -> androidx.navigation:navigation-compose:2.7.5 -> androidx.navigation:navigation-runtime-ktx:2.7.5 -> androidx.navigation:navigation-common-ktx:2.7.5 -> androidx.navigation:navigation-common:2.7.5 -> androidx.navigation:navigation-runtime:2.7.5 -> androidx.activity:activity-ktx:1.8.1 -> androidx.activity:activity:1.8.1 -> androidx.savedstate:savedstate:1.2.1
+  :app:debugRuntimeClasspath -> androidx.navigation:navigation-compose:2.7.5 -> androidx.navigation:navigation-runtime-ktx:2.7.5 -> androidx.navigation:navigation-common-ktx:2.7.5 -> androidx.navigation:navigation-runtime:2.7.5 -> androidx.navigation:navigation-common:2.7.5 -> androidx.savedstate:savedstate-ktx:1.2.1
+  :app:debugRuntimeClasspath -> androidx.compose:compose-bom:2023.10.01 -> androidx.compose.ui:ui-tooling-data:1.5.4
+  :app:debugRuntimeClasspath -> androidx.compose:compose-bom:2023.10.01 -> androidx.compose.ui:ui-tooling-data-android:1.5.4
+  :app:debugRuntimeClasspath -> androidx.compose.ui:ui-tooling-preview:1.5.4
+  :app:debugRuntimeClasspath -> androidx.compose:compose-bom:2023.10.01 -> androidx.compose.ui:ui-tooling-preview-android:1.5.4
+  :app:debugRuntimeClasspath -> androidx.compose:compose-bom:2023.10.01 -> androidx.compose.ui:ui-android:1.5.4 -> androidx.customview:customview-poolingcontainer:1.0.0
+  :app:debugRuntimeClasspath -> androidx.navigation:navigation-compose:2.7.5 -> androidx.navigation:navigation-runtime-ktx:2.7.5 -> androidx.navigation:navigation-common-ktx:2.7.5 -> androidx.navigation:navigation-runtime:2.7.5 -> androidx.navigation:navigation-common:2.7.5 -> androidx.profileinstaller:profileinstaller:1.3.0
+  :app:debugRuntimeClasspath -> androidx.compose:compose-bom:2023.10.01 -> androidx.compose.foundation:foundation:1.5.4
+  :app:debugRuntimeClasspath -> androidx.compose:compose-bom:2023.10.01 -> androidx.compose.foundation:foundation-android:1.5.4
+  :app:debugRuntimeClasspath -> androidx.compose:compose-bom:2023.10.01 -> androidx.compose.animation:animation:1.5.4
+  :app:debugRuntimeClasspath -> androidx.compose:compose-bom:2023.10.01 -> androidx.compose.animation:animation-android:1.5.4
+  :app:debugRuntimeClasspath -> androidx.compose:compose-bom:2023.10.01 -> androidx.compose.animation:animation-core:1.5.4
+  :app:debugRuntimeClasspath -> androidx.compose:compose-bom:2023.10.01 -> androidx.compose.animation:animation-core-android:1.5.4
+  :app:debugRuntimeClasspath -> androidx.compose:compose-bom:2023.10.01 -> androidx.compose.foundation:foundation-layout:1.5.4
+  :app:debugRuntimeClasspath -> androidx.compose:compose-bom:2023.10.01 -> androidx.compose.foundation:foundation-layout-android:1.5.4
+  :app:debugRuntimeClasspath -> androidx.navigation:navigation-compose:2.7.5 -> androidx.navigation:navigation-runtime-ktx:2.7.5 -> androidx.navigation:navigation-common-ktx:2.7.5 -> androidx.navigation:navigation-common:2.7.5 -> androidx.navigation:navigation-runtime:2.7.5 -> androidx.activity:activity-ktx:1.8.1 -> androidx.activity:activity:1.8.1 -> androidx.core:core:1.12.0 -> androidx.versionedparcelable:versionedparcelable:1.1.1
+  :app:debugRuntimeClasspath -> androidx.compose:compose-bom:2023.10.01 -> androidx.compose.material:material:1.5.4
+  :app:debugRuntimeClasspath -> androidx.compose:compose-bom:2023.10.01 -> androidx.compose.material:material-android:1.5.4
+  :app:debugRuntimeClasspath -> androidx.compose:compose-bom:2023.10.01 -> androidx.compose.material:material-icons-core:1.5.4
+  :app:debugRuntimeClasspath -> androidx.compose:compose-bom:2023.10.01 -> androidx.compose.material:material-icons-core-android:1.5.4
+  :app:debugRuntimeClasspath -> androidx.compose:compose-bom:2023.10.01 -> androidx.compose.material:material-ripple:1.5.4
+  :app:debugRuntimeClasspath -> androidx.compose:compose-bom:2023.10.01 -> androidx.compose.material:material-ripple-android:1.5.4
+  :app:debugRuntimeClasspath -> androidx.compose:compose-bom:2023.10.01
+  :app:debugRuntimeClasspath -> androidx.compose.material3:material3:1.1.2
+  :app:debugRuntimeClasspath -> androidx.navigation:navigation-compose:2.7.5
+  :app:debugRuntimeClasspath -> androidx.navigation:navigation-compose:2.7.5 -> androidx.navigation:navigation-common-ktx:2.7.5 -> androidx.navigation:navigation-runtime:2.7.5 -> androidx.navigation:navigation-common:2.7.5 -> androidx.navigation:navigation-runtime-ktx:2.7.5
+  :app:debugRuntimeClasspath -> androidx.navigation:navigation-compose:2.7.5 -> androidx.navigation:navigation-runtime-ktx:2.7.5 -> androidx.navigation:navigation-runtime:2.7.5 -> androidx.navigation:navigation-common:2.7.5 -> androidx.navigation:navigation-common-ktx:2.7.5
+  :app:debugRuntimeClasspath -> androidx.navigation:navigation-compose:2.7.5 -> androidx.navigation:navigation-runtime-ktx:2.7.5 -> androidx.navigation:navigation-common-ktx:2.7.5 -> androidx.navigation:navigation-runtime:2.7.5 -> androidx.navigation:navigation-common:2.7.5
+  :app:debugRuntimeClasspath -> androidx.navigation:navigation-compose:2.7.5 -> androidx.navigation:navigation-runtime-ktx:2.7.5 -> androidx.navigation:navigation-common-ktx:2.7.5 -> androidx.navigation:navigation-runtime:2.7.5 -> androidx.navigation:navigation-common:2.7.5 -> androidx.collection:collection-ktx:1.1.0
+  :app:debugRuntimeClasspath -> androidx.navigation:navigation-compose:2.7.5 -> androidx.navigation:navigation-runtime-ktx:2.7.5 -> androidx.navigation:navigation-common-ktx:2.7.5 -> androidx.navigation:navigation-common:2.7.5 -> androidx.navigation:navigation-runtime:2.7.5
+  :app:debugRuntimeClasspath -> androidx.datastore:datastore-preferences:1.0.0
+  :app:debugRuntimeClasspath -> androidx.datastore:datastore-preferences:1.0.0 -> androidx.datastore:datastore:1.0.0
+  :app:debugRuntimeClasspath -> androidx.datastore:datastore-preferences:1.0.0 -> androidx.datastore:datastore:1.0.0 -> androidx.datastore:datastore-core:1.0.0
+  :app:debugRuntimeClasspath -> androidx.datastore:datastore-preferences:1.0.0 -> androidx.datastore:datastore-preferences-core:1.0.0
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 31s
+42 actionable tasks: 25 executed, 17 up-to-date
