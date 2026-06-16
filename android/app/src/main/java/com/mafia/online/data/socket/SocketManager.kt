@@ -4,11 +4,8 @@ import io.socket.client.IO
 import io.socket.client.Socket
 import io.socket.emitter.Emitter
 import org.json.JSONObject
-import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
-class SocketManager @Inject constructor() {
+class SocketManager {
 
     private var socket: Socket? = null
 

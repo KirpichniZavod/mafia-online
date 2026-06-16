@@ -1,5 +1,7 @@
-xecuting tasks: [:app:assembleDebug, :app:assembleDebugUnitTest, :app:assembleDebugAndroidTest] in project D:\game\android
+Executing tasks: [:app:assembleDebug, :app:assembleDebugUnitTest, :app:assembleDebugAndroidTest] in project D:\game\android
 
+Starting Gradle Daemon...
+Gradle Daemon started in 1 s 251 ms
 > Task :app:createDebugVariantModel UP-TO-DATE
 > Task :app:preBuild UP-TO-DATE
 > Task :app:preDebugBuild UP-TO-DATE
@@ -7,17 +9,16 @@ xecuting tasks: [:app:assembleDebug, :app:assembleDebugUnitTest, :app:assembleDe
 > Task :app:checkKotlinGradlePluginConfigurationErrors
 > Task :app:checkDebugAarMetadata UP-TO-DATE
 > Task :app:generateDebugResValues UP-TO-DATE
-> Task :app:mapDebugSourceSetPaths UP-TO-DATE
+> Task :app:mapDebugSourceSetPaths
 > Task :app:generateDebugResources UP-TO-DATE
-> Task :app:mergeDebugResources UP-TO-DATE
-> Task :app:packageDebugResources UP-TO-DATE
-> Task :app:parseDebugLocalResources UP-TO-DATE
+> Task :app:packageDebugResources
 > Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
 > Task :app:extractDeepLinksDebug UP-TO-DATE
 > Task :app:processDebugMainManifest UP-TO-DATE
 > Task :app:processDebugManifest UP-TO-DATE
 > Task :app:processDebugManifestForPackage UP-TO-DATE
 > Task :app:javaPreCompileDebug UP-TO-DATE
+> Task :app:parseDebugLocalResources
 > Task :app:mergeDebugShaders UP-TO-DATE
 > Task :app:compileDebugShaders NO-SOURCE
 > Task :app:generateDebugAssets UP-TO-DATE
@@ -26,6 +27,7 @@ xecuting tasks: [:app:assembleDebug, :app:assembleDebugUnitTest, :app:assembleDe
 > Task :app:desugarDebugFileDependencies UP-TO-DATE
 > Task :app:checkDebugDuplicateClasses UP-TO-DATE
 > Task :app:mergeExtDexDebug UP-TO-DATE
+> Task :app:mergeDebugResources
 > Task :app:mergeLibDexDebug UP-TO-DATE
 > Task :app:mergeDebugJniLibFolders UP-TO-DATE
 > Task :app:mergeDebugNativeLibs NO-SOURCE
@@ -57,21 +59,35 @@ xecuting tasks: [:app:assembleDebug, :app:assembleDebugUnitTest, :app:assembleDe
 > Task :app:stripDebugAndroidTestDebugSymbols NO-SOURCE
 > Task :app:validateSigningDebugAndroidTest UP-TO-DATE
 > Task :app:writeDebugAndroidTestSigningConfigVersions UP-TO-DATE
+> Task :app:processDebugResources
+Download https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-reflect/1.6.10/kotlin-reflect-1.6.10.pom, took 267 ms
+Download https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-script-runtime/1.9.22/kotlin-script-runtime-1.9.22.pom, took 290 ms
+Download https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-script-runtime/1.9.22/kotlin-script-runtime-1.9.22.jar, took 168 ms
+Download https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-reflect/1.6.10/kotlin-reflect-1.6.10.jar, took 806 ms
 
-> Task :app:processDebugResources FAILED
-AGPBI: {"kind":"error","text":"Android resource linking failed","sources":[{"file":"D:\\game\\android\\app\\src\\main\\AndroidManifest.xml","position":{"startLine":5,"startColumn":4,"endLine":21,"endColumn":18}}],"original":"ERROR: D:\\game\\android\\app\\src\\main\\AndroidManifest.xml:6:5-22:19: AAPT: error: resource style/Theme.MafiaOnline (aka com.mafia.online:style/Theme.MafiaOnline) not found.\n    ","tool":"AAPT"}
-AGPBI: {"kind":"error","text":"Android resource linking failed","sources":[{"file":"D:\\game\\android\\app\\src\\main\\AndroidManifest.xml","position":{"startLine":12,"startColumn":8,"endLine":20,"endColumn":19}}],"original":"ERROR: D:\\game\\android\\app\\src\\main\\AndroidManifest.xml:13:9-21:20: AAPT: error: resource style/Theme.MafiaOnline (aka com.mafia.online:style/Theme.MafiaOnline) not found.\n    ","tool":"AAPT"}
+> Task :app:compileDebugKotlin FAILED
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/data/socket/SocketManager.kt:7:14 Unresolved reference: inject
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/data/socket/SocketManager.kt:8:14 Unresolved reference: inject
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/data/socket/SocketManager.kt:10:2 Unresolved reference: Singleton
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/data/socket/SocketManager.kt:11:22 Unresolved reference: Inject
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/navigation/NavGraph.kt:83:40 Suspend function 'getToken' should be called only from a coroutine or another suspend function
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/navigation/NavGraph.kt:97:40 Suspend function 'getToken' should be called only from a coroutine or another suspend function
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/navigation/NavGraph.kt:111:40 Suspend function 'getToken' should be called only from a coroutine or another suspend function
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/profile/ProfileScreen.kt:54:25 Type mismatch: inferred type is Unit but GridItemSpan was expected
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/profile/ProfileScreen.kt:54:27 Unresolved reference: GridItemSpan
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/profile/ProfileScreen.kt:63:25 Type mismatch: inferred type is Unit but GridItemSpan was expected
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/profile/ProfileScreen.kt:63:27 Unresolved reference: GridItemSpan
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/profile/ProfileScreen.kt:103:25 Type mismatch: inferred type is Unit but GridItemSpan was expected
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/profile/ProfileScreen.kt:103:27 Unresolved reference: GridItemSpan
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/profile/ProfileScreen.kt:130:25 Type mismatch: inferred type is Unit but GridItemSpan was expected
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/profile/ProfileScreen.kt:130:27 Unresolved reference: GridItemSpan
 
 FAILURE: Build failed with an exception.
 
 * What went wrong:
-Execution failed for task ':app:processDebugResources'.
-> A failure occurred while executing com.android.build.gradle.internal.res.LinkApplicationAndroidResourcesTask$TaskAction
-   > Android resource linking failed
-     ERROR: D:\game\android\app\src\main\AndroidManifest.xml:6:5-22:19: AAPT: error: resource style/Theme.MafiaOnline (aka com.mafia.online:style/Theme.MafiaOnline) not found.
-         
-     ERROR: D:\game\android\app\src\main\AndroidManifest.xml:13:9-21:20: AAPT: error: resource style/Theme.MafiaOnline (aka com.mafia.online:style/Theme.MafiaOnline) not found.
-         
+Execution failed for task ':app:compileDebugKotlin'.
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction
+   > Compilation error. See log for more details
 
 * Try:
 > Run with --stacktrace option to get the stack trace.
@@ -79,5 +95,5 @@ Execution failed for task ':app:processDebugResources'.
 > Run with --scan to get full insights.
 > Get more help at https://help.gradle.org.
 
-BUILD FAILED in 798ms
-43 actionable tasks: 2 executed, 41 up-to-date
+BUILD FAILED in 23s
+44 actionable tasks: 7 executed, 37 up-to-date

@@ -14,6 +14,7 @@ import com.mafia.online.ui.screens.lobby.LobbyScreen
 import com.mafia.online.ui.screens.login.LoginScreen
 import com.mafia.online.ui.screens.profile.ProfileScreen
 import com.mafia.online.ui.screens.register.RegisterScreen
+import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -21,27 +22,33 @@ import retrofit2.converter.gson.GsonConverterFactory
 fun MafiaNavGraph() {
     val navController = rememberNavController()
     val context = androidx.compose.ui.platform.LocalContext.current
+    val scope = rememberCoroutineScope()
 
-    val api = Retrofit.Builder()
-        .baseUrl("https://mafia-server-eljy.onrender.com/")
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
-        .create(ApiService::class.java)
+    val api = remember {
+        Retrofit.Builder()
+            .baseUrl("https://mafia-server-eljy.onrender.com/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(ApiService::class.java)
+    }
 
     val repository = remember { AuthRepository(api, context) }
     var user by remember { mutableStateOf<com.mafia.online.data.model.User?>(null) }
     var banInfo by remember { mutableStateOf<Pair<String?, String?>?>(null) }
+    var token by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
-        val token = repository.getToken()
-        if (token != null) {
+        val savedToken = repository.getToken()
+        token = savedToken
+        if (savedToken != null) {
             try {
-                user = api.getProfile("Bearer $token")
-                if (user?.isBanned == true) {
-                    banInfo = Pair(user?.banReason, user?.banUntil)
+                val fetchedUser = api.getProfile("Bearer $savedToken")
+                user = fetchedUser
+                if (fetchedUser.isBanned) {
+                    banInfo = Pair(fetchedUser.banReason, fetchedUser.banUntil)
                 }
             } catch (e: Exception) {
-                // Token expired
+                // Token expired or invalid
             }
         }
     }
@@ -54,8 +61,9 @@ fun MafiaNavGraph() {
     NavHost(navController = navController, startDestination = "login") {
         composable("login") {
             LoginScreen(
-                onLogin = { userData, token ->
+                onLogin = { userData, userToken ->
                     user = userData
+                    token = userToken
                     navController.navigate("lobby") {
                         popUpTo("login") { inclusive = true }
                     }
@@ -66,8 +74,9 @@ fun MafiaNavGraph() {
 
         composable("register") {
             RegisterScreen(
-                onRegister = { userData, token ->
+                onRegister = { userData, userToken ->
                     user = userData
+                    token = userToken
                     navController.navigate("lobby") {
                         popUpTo("login") { inclusive = true }
                     }
@@ -77,10 +86,11 @@ fun MafiaNavGraph() {
         }
 
         composable("lobby") {
+            val currentToken = token ?: return@composable
             user?.let { u ->
                 LobbyScreen(
                     user = u,
-                    token = repository.getToken() ?: "",
+                    token = currentToken,
                     onJoinRoom = { roomId -> navController.navigate("game/$roomId") }
                 )
             }
@@ -91,10 +101,11 @@ fun MafiaNavGraph() {
             arguments = listOf(navArgument("roomId") { type = NavType.StringType })
         ) { backStackEntry ->
             val roomId = backStackEntry.arguments?.getString("roomId") ?: return@composable
+            val currentToken = token ?: return@composable
             user?.let { u ->
                 GameScreen(
                     user = u,
-                    token = repository.getToken() ?: "",
+                    token = currentToken,
                     roomId = roomId,
                     onLeave = { navController.popBackStack() },
                     onBanned = { reason, until ->
@@ -105,10 +116,11 @@ fun MafiaNavGraph() {
         }
 
         composable("profile") {
+            val currentToken = token ?: return@composable
             user?.let { u ->
                 ProfileScreen(
                     user = u,
-                    token = repository.getToken() ?: "",
+                    token = currentToken,
                     onBack = { navController.popBackStack() }
                 )
             }

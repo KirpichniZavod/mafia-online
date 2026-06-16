@@ -36,7 +36,7 @@ fun ProfileScreen(
     var selectedAvatar by remember { mutableStateOf(user.avatar) }
     val winRate = if (user.gamesPlayed > 0) (user.wins * 100 / user.gamesPlayed) else 0
 
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .background(
@@ -44,121 +44,112 @@ fun ProfileScreen(
                     colors = listOf(BackgroundDark, SurfaceDark)
                 )
             )
+            .padding(16.dp)
     ) {
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            item(span = { GridItemSpan(2) }) {
+        Text(
+            text = "Профиль",
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Bold,
+            color = TextPrimary
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Card(colors = CardDefaults.cardColors(containerColor = CardDark)) {
+            Row(
+                modifier = Modifier.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(64.dp)
+                        .clip(CircleShape)
+                        .background(SurfaceDark),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = selectedAvatar ?: "👤",
+                        fontSize = 32.sp
+                    )
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                Column {
+                    Text(text = user.nickname, fontWeight = FontWeight.Bold, color = TextPrimary)
+                    Text(text = "Логин: ${user.login}", color = TextSecondary)
+                    Text(
+                        text = "Зарегистрирован: ${user.createdAt.take(10)}",
+                        color = TextMuted,
+                        fontSize = 14.sp
+                    )
+                    if (user.isAdmin) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Администратор",
+                            color = AccentGlow,
+                            fontSize = 12.sp
+                        )
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Card(colors = CardDefaults.cardColors(containerColor = CardDark)) {
+            Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    text = "Профиль",
-                    fontSize = 28.sp,
+                    text = "Статистика",
                     fontWeight = FontWeight.Bold,
                     color = TextPrimary
                 )
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    StatItem(value = "${user.wins}", label = "Победы", color = Success)
+                    StatItem(value = "${user.losses}", label = "Поражения", color = Danger)
+                    StatItem(value = "$winRate%", label = "Винрейт", color = AccentGlow)
+                }
+                Text(
+                    text = "Всего игр: ${user.gamesPlayed}",
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    color = TextSecondary
+                )
             }
+        }
 
-            item(span = { GridItemSpan(2) }) {
-                Card(colors = CardDefaults.cardColors(containerColor = CardDark)) {
-                    Row(
-                        modifier = Modifier.padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Card(colors = CardDefaults.cardColors(containerColor = CardDark)) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = "Аватар",
+                    fontWeight = FontWeight.Bold,
+                    color = TextPrimary
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(6),
+                    modifier = Modifier.height(200.dp)
+                ) {
+                    items(presetAvatars) { avatar ->
                         Box(
                             modifier = Modifier
-                                .size(64.dp)
-                                .clip(CircleShape)
-                                .background(SurfaceDark),
+                                .padding(4.dp)
+                                .size(48.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(
+                                    if (selectedAvatar == avatar) AccentPrimary
+                                    else SurfaceDark
+                                )
+                                .clickable {
+                                    selectedAvatar = avatar
+                                },
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(
-                                text = selectedAvatar ?: "👤",
-                                fontSize = 32.sp
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Column {
-                            Text(text = user.nickname, fontWeight = FontWeight.Bold, color = TextPrimary)
-                            Text(text = "Логин: ${user.login}", color = TextSecondary)
-                            Text(
-                                text = "Зарегистрирован: ${user.createdAt.take(10)}",
-                                color = TextMuted,
-                                fontSize = 14.sp
-                            )
-                            if (user.isAdmin) {
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = "Администратор",
-                                    color = AccentGlow,
-                                    fontSize = 12.sp
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-            item(span = { GridItemSpan(2) }) {
-                Card(colors = CardDefaults.cardColors(containerColor = CardDark)) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = "Статистика",
-                            fontWeight = FontWeight.Bold,
-                            color = TextPrimary
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceEvenly
-                        ) {
-                            StatItem(value = "${user.wins}", label = "Победы", color = Success)
-                            StatItem(value = "${user.losses}", label = "Поражения", color = Danger)
-                            StatItem(value = "$winRate%", label = "Винрейт", color = AccentGlow)
-                        }
-                        Text(
-                            text = "Всего игр: ${user.gamesPlayed}",
-                            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                            color = TextSecondary
-                        )
-                    }
-                }
-            }
-
-            item(span = { GridItemSpan(2) }) {
-                Card(colors = CardDefaults.cardColors(containerColor = CardDark)) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = "Аватар",
-                            fontWeight = FontWeight.Bold,
-                            color = TextPrimary
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        LazyVerticalGrid(
-                            columns = GridCells.Fixed(6),
-                            modifier = Modifier.height(200.dp)
-                        ) {
-                            items(presetAvatars) { avatar ->
-                                Box(
-                                    modifier = Modifier
-                                        .padding(4.dp)
-                                        .size(48.dp)
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .background(
-                                            if (selectedAvatar == avatar) AccentPrimary
-                                            else SurfaceDark
-                                        )
-                                        .clickable {
-                                            selectedAvatar = avatar
-                                            // TODO: Save avatar via API
-                                        },
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(text = avatar, fontSize = 24.sp)
-                                }
-                            }
+                            Text(text = avatar, fontSize = 24.sp)
                         }
                     }
                 }
