@@ -28,6 +28,12 @@ app.use('/uploads', express.static('uploads'));
 
 app.use((req, res, next) => {
   log.httpRequest(req, res);
+  req.io = io;
+  next();
+});
+
+app.use((req, res, next) => {
+  log.httpRequest(req, res);
   next();
 });
 
@@ -37,6 +43,27 @@ app.use('/api/profile', profileRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+app.get('/api/leaderboard', async (req, res) => {
+  try {
+    const { PrismaClient } = require('@prisma/client');
+    const prisma = new PrismaClient();
+    const users = await prisma.user.findMany({
+      where: { gamesPlayed: { gte: 1 } },
+      select: { id: true, nickname: true, wins: true, losses: true, gamesPlayed: true, avatar: true },
+      orderBy: { wins: 'desc' },
+      take: 20
+    });
+    const leaderboard = users.map(u => ({
+      ...u,
+      winRate: u.gamesPlayed > 0 ? Math.round((u.wins / u.gamesPlayed) * 100) : 0,
+      rating: u.wins * 2 - u.losses + Math.floor(u.gamesPlayed * 0.1)
+    })).sort((a, b) => b.rating - a.rating);
+    res.json(leaderboard);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 socketHandler(io);

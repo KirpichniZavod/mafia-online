@@ -66,6 +66,8 @@ router.post('/ban/:userId', async (req, res) => {
     const durationText = banUntil ? `until ${banUntil.toISOString()}` : 'permanent';
     log.auth.adminAction(req.user.nickname, 'BAN', `${user.nickname} (${durationText})`, ip);
 
+    req.io.emit('player-banned', { userId: user.id, nickname: user.nickname, reason, until: banUntil });
+
     res.json({
       message: 'User banned',
       user: { id: user.id, nickname: user.nickname },
@@ -179,6 +181,22 @@ router.post('/kick/:roomId/:userId', async (req, res) => {
 
     const user = await prisma.user.findUnique({ where: { id: parseInt(userId) }, select: { nickname: true } });
     log.auth.adminAction(req.user.nickname, 'KICK', `${user?.nickname} from room #${roomId}`, ip);
+
+    const players = await prisma.player.findMany({
+      where: { roomId: parseInt(roomId) },
+      include: { user: { select: { id: true, nickname: true, avatar: true } } }
+    });
+
+    const room = await prisma.room.findUnique({ where: { id: parseInt(roomId) } });
+    const playerList = players.map(p => ({
+      id: p.user.id,
+      nickname: p.user.nickname,
+      avatar: p.user.avatar,
+      isHost: p.userId === room?.hostId
+    }));
+
+    req.io.to('room:' + roomId).emit('room-updated', { roomId: parseInt(roomId), players: playerList });
+    req.io.to('room:' + roomId).emit('player-kicked', { userId: parseInt(userId), nickname: user?.nickname });
 
     res.json({ message: 'Player kicked' });
   } catch (error) {

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
 import GameChat from '../components/Chat/GameChat';
+import Banned from './Banned';
 import config from '../config';
 
 function Game({ user, token }) {
@@ -26,6 +27,7 @@ function Game({ user, token }) {
   const [hasStarted, setHasStarted] = useState(false);
   const [reconnecting, setReconnecting] = useState(false);
   const [reconnectTimer, setReconnectTimer] = useState(0);
+  const [banInfo, setBanInfo] = useState(null);
 
   useEffect(() => {
     const newSocket = io(config.serverUrl, {
@@ -143,6 +145,19 @@ function Game({ user, token }) {
       setGameResult(data);
       setPhase('ended');
       if (data.players) setPlayers(data.players);
+    });
+
+    newSocket.on('player-kicked', (data) => {
+      if (data.userId === user.id) {
+        setError('Вы были выгнаны из комнаты');
+        setTimeout(() => navigate('/lobby'), 2000);
+      }
+    });
+
+    newSocket.on('player-banned', (data) => {
+      if (data.userId === user.id) {
+        setBanInfo({ reason: data.reason, until: data.until });
+      }
     });
 
     setSocket(newSocket);
@@ -396,6 +411,10 @@ function Game({ user, token }) {
       </div>
     );
   };
+
+  if (banInfo) {
+    return <Banned reason={banInfo.reason} until={banInfo.until} />;
+  }
 
   if (!connected) {
     return (

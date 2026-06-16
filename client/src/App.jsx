@@ -1,5 +1,6 @@
 import { HashRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import io from 'socket.io-client';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Lobby from './pages/Lobby';
@@ -41,6 +42,14 @@ function App() {
           });
         }
       }).catch(() => {});
+
+      const socket = io(config.serverUrl, { auth: { token } });
+      socket.on('player-banned', (data) => {
+        if (savedUser && JSON.parse(savedUser).id === data.userId) {
+          setBanInfo({ reason: data.reason, until: data.until });
+        }
+      });
+      return () => socket.disconnect();
     }
   }, [token]);
 

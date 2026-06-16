@@ -8,7 +8,7 @@ function Leaderboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${config.serverUrl}/api/profile/leaderboard`)
+    fetch(`${config.serverUrl}/api/leaderboard`)
       .then(r => r.json())
       .then(data => { setPlayers(data); setLoading(false); })
       .catch(() => setLoading(false));
