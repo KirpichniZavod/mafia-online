@@ -462,15 +462,27 @@ function Game({ user, token }) {
             </div>
           </div>
 
-          {phase === 'waiting' && isHost && players.length >= 5 && (
+          {phase === 'waiting' && isHost && players.length >= 2 && user.isAdmin && (
+            <button className="btn btn-primary animate-glow" onClick={handleStartGame} style={{ width: '100%' }}>
+              👑 Начать игру ({players.length} игроков) — Админ-режим
+            </button>
+          )}
+
+          {phase === 'waiting' && isHost && !user.isAdmin && players.length >= 5 && (
             <button className="btn btn-primary" onClick={handleStartGame} style={{ width: '100%' }}>
               Начать игру ({players.length} игроков)
             </button>
           )}
 
-          {phase === 'waiting' && isHost && players.length < 5 && (
+          {phase === 'waiting' && isHost && !user.isAdmin && players.length < 5 && (
             <p className="text-center" style={{ color: 'var(--text-muted)' }}>
               Нужно минимум 5 игроков (сейчас {players.length})
+            </p>
+          )}
+
+          {phase === 'waiting' && isHost && user.isAdmin && players.length < 2 && (
+            <p className="text-center" style={{ color: 'var(--text-muted)' }}>
+              Минимум 2 игрока (сейчас {players.length})
             </p>
           )}
 

@@ -12,7 +12,7 @@ const RESULT_DELAY = 5000;
 const RECONNECT_TIMEOUT = 60000;
 
 function gameHandler(io, socket, prisma) {
-  const uid = () => parseInt(uid());
+  const uid = () => parseInt(socket.user.id);
 
   socket.on('start-game', async (data, callback) => {
     try {
@@ -26,7 +26,10 @@ function gameHandler(io, socket, prisma) {
 
       if (!room) return callback({ error: 'Room not found' });
       if (room.hostId !== uid()) return callback({ error: 'Only host can start' });
-      if (room.players.length < 5) return callback({ error: 'Need at least 5 players' });
+
+      const isAdmin = socket.user.isAdmin;
+      if (!isAdmin && room.players.length < 5) return callback({ error: 'Need at least 5 players' });
+      if (room.players.length < 2) return callback({ error: 'Need at least 2 players' });
 
       const roles = assignRoles(room.players.length, room);
 
