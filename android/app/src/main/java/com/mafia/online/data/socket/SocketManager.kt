@@ -13,7 +13,6 @@ class SocketManager {
         val opts = IO.Options.builder()
             .setAuth(mapOf("token" to token))
             .build()
-
         socket = IO.socket(serverUrl, opts)
         socket?.connect()
     }
@@ -23,26 +22,25 @@ class SocketManager {
         socket = null
     }
 
-    fun isConnected(): Boolean = socket?.connected() == true
-
-    fun on(event: String, handler: Emitter.Listener) {
-        socket?.on(event, handler)
-    }
-
-    fun off(event: String) {
-        socket?.off(event)
-    }
-
-    fun emit(event: String, vararg args: Any) {
-        socket?.emit(event, *args)
-    }
-
-    fun emitWithCallback(event: String, callback: (JSONObject) -> Unit, vararg args: Any) {
-        socket?.emit(event, object : Emitter.Listener {
+    fun on(event: String, handler: (JSONObject) -> Unit) {
+        socket?.on(event, object : Emitter.Listener {
             override fun call(vararg args: Any?) {
-                val response = args.firstOrNull() as? JSONObject
-                response?.let { callback(it) }
+                val data = args.firstOrNull() as? JSONObject
+                if (data != null) handler(data)
             }
-        }, *args)
+        })
+    }
+
+    fun emit(event: String, data: JSONObject, callback: ((JSONObject) -> Unit)? = null) {
+        if (callback != null) {
+            socket?.emit(event, object : Emitter.Listener {
+                override fun call(vararg args: Any?) {
+                    val response = args.firstOrNull() as? JSONObject
+                    if (response != null) callback(response)
+                }
+            }, data)
+        } else {
+            socket?.emit(event, data)
+        }
     }
 }

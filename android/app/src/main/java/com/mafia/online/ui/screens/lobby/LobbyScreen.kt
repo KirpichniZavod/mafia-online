@@ -31,197 +31,86 @@ fun LobbyScreen(
     var showCreateDialog by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf("") }
 
+    fun parseRooms(response: JSONObject) {
+        val arr = response.optJSONArray("rooms")
+        if (arr != null) {
+            val list = mutableListOf<Room>()
+            for (i in 0 until arr.length()) {
+                val obj = arr.getJSONObject(i)
+                list.add(Room(
+                    id = obj.getInt("id"),
+                    name = obj.getString("name"),
+                    players = obj.getInt("players"),
+                    maxPlayers = obj.getInt("maxPlayers")
+                ))
+            }
+            rooms = list
+        }
+    }
+
     LaunchedEffect(Unit) {
         socketManager.connect("https://mafia-server-eljy.onrender.com", token)
-
-        socketManager.on("room-created") {
-            socketManager.emit("get-rooms") { response ->
-                val roomArray = response.optJSONArray("rooms")
-                if (roomArray != null) {
-                    val list = mutableListOf<Room>()
-                    for (i in 0 until roomArray.length()) {
-                        val obj = roomArray.getJSONObject(i)
-                        list.add(Room(
-                            id = obj.getInt("id"),
-                            name = obj.getString("name"),
-                            players = obj.getInt("players"),
-                            maxPlayers = obj.getInt("maxPlayers")
-                        ))
-                    }
-                    rooms = list
-                }
-            }
-        }
-
-        socketManager.on("room-deleted") {
-            socketManager.emit("get-rooms") { response ->
-                val roomArray = response.optJSONArray("rooms")
-                if (roomArray != null) {
-                    val list = mutableListOf<Room>()
-                    for (i in 0 until roomArray.length()) {
-                        val obj = roomArray.getJSONObject(i)
-                        list.add(Room(
-                            id = obj.getInt("id"),
-                            name = obj.getString("name"),
-                            players = obj.getInt("players"),
-                            maxPlayers = obj.getInt("maxPlayers")
-                        ))
-                    }
-                    rooms = list
-                }
-            }
-        }
-
-        socketManager.emit("get-rooms") { response ->
-            val roomArray = response.optJSONArray("rooms")
-            if (roomArray != null) {
-                val list = mutableListOf<Room>()
-                for (i in 0 until roomArray.length()) {
-                    val obj = roomArray.getJSONObject(i)
-                    list.add(Room(
-                        id = obj.getInt("id"),
-                        name = obj.getString("name"),
-                        players = obj.getInt("players"),
-                        maxPlayers = obj.getInt("maxPlayers")
-                    ))
-                }
-                rooms = list
-            }
-        }
+        socketManager.on("room-created") { parseRooms(it) }
+        socketManager.on("room-deleted") { parseRooms(it) }
+        socketManager.emit("get-rooms", JSONObject(), ::parseRooms)
     }
 
-    DisposableEffect(Unit) {
-        onDispose { socketManager.disconnect() }
-    }
+    DisposableEffect(Unit) { onDispose { socketManager.disconnect() } }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Brush.verticalGradient(listOf(BackgroundDark, SurfaceDark)))
-    ) {
+    Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(BackgroundDark, SurfaceDark)))) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Text("Лобби", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
-                Button(
-                    onClick = { showCreateDialog = true },
-                    colors = ButtonDefaults.buttonColors(containerColor = AccentPrimary)
-                ) { Text("Создать комнату") }
+                Button(onClick = { showCreateDialog = true }, colors = ButtonDefaults.buttonColors(containerColor = AccentPrimary)) { Text("Создать комнату") }
             }
-
             Spacer(modifier = Modifier.height(16.dp))
-
-            if (error.isNotEmpty()) {
-                Text(text = error, color = Danger, modifier = Modifier.padding(bottom = 8.dp))
-            }
-
+            if (error.isNotEmpty()) Text(error, color = Danger)
             Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = CardDark)) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text("Доступные комнаты", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
                     Spacer(modifier = Modifier.height(12.dp))
-                    if (rooms.isEmpty()) {
-                        Text("Нет доступных комнат. Создайте первую!", color = TextMuted)
-                    } else {
-                        LazyColumn {
-                            items(rooms) { room ->
-                                RoomCard(room = room, onJoin = {
-                                    socketManager.emit("join-room", JSONObject().put("roomId", room.id)) { response ->
-                                        if (response.optBoolean("success")) {
-                                            onJoinRoom(room.id)
-                                        } else {
-                                            error = response.optString("error", "Ошибка")
-                                        }
-                                    }
-                                })
-                            }
-                        }
-                    }
+                    if (rooms.isEmpty()) Text("Нет доступных комнат", color = TextMuted)
+                    else LazyColumn { items(rooms) { room -> RoomCard(room) { socketManager.emit("join-room", JSONObject().put("roomId", room.id)) { if (it.optBoolean("success")) onJoinRoom(room.id) else error = it.optString("error", "Ошибка") } } } }
                 }
             }
         }
     }
 
     if (showCreateDialog) {
-        CreateRoomDialog(
-            onDismiss = { showCreateDialog = false },
-            onCreate = { name, maxPlayers, mafia, commissioner, doctor ->
-                val data = JSONObject().apply {
-                    put("name", name)
-                    put("maxPlayers", maxPlayers)
-                    put("mafiaCount", mafia)
-                    put("commissionerCount", commissioner)
-                    put("doctorCount", doctor)
+        AlertDialog(
+            onDismissRequest = { showCreateDialog = false },
+            title = { Text("Новая комната") },
+            text = {
+                var name by remember { mutableStateOf("") }
+                var max by remember { mutableStateOf(10) }
+                var mafia by remember { mutableStateOf(1) }
+                var sheriff by remember { mutableStateOf(1) }
+                var doctor by remember { mutableStateOf(1) }
+                Column {
+                    OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Название") }, modifier = Modifier.fillMaxWidth())
+                    Text("Макс: $max", color = TextSecondary); Slider(max.toFloat(), { max = it.toInt() }, valueRange = 5f..10f, colors = SliderDefaults.colors(thumbColor = AccentPrimary, activeTrackColor = AccentPrimary))
+                    Text("Мафия: $mafia", color = TextSecondary); Slider(mafia.toFloat(), { mafia = it.toInt() }, valueRange = 1f..(max/3).toFloat(), colors = SliderDefaults.colors(thumbColor = Danger, activeTrackColor = Danger))
+                    Text("Шериф: $sheriff", color = TextSecondary); Slider(sheriff.toFloat(), { sheriff = it.toInt() }, valueRange = 0f..3f, colors = SliderDefaults.colors(thumbColor = Warning, activeTrackColor = Warning))
+                    Text("Врач: $doctor", color = TextSecondary); Slider(doctor.toFloat(), { doctor = it.toInt() }, valueRange = 0f..3f, colors = SliderDefaults.colors(thumbColor = Success, activeTrackColor = Success))
                 }
-                socketManager.emit("create-room", data) { response ->
-                    if (response.optBoolean("success")) {
-                        val roomId = response.optInt("roomId")
-                        showCreateDialog = false
-                        onJoinRoom(roomId)
-                    } else {
-                        error = response.optString("error", "Ошибка")
-                        showCreateDialog = false
-                    }
-                }
-            }
+            },
+            confirmButton = {
+                Button(onClick = {
+                    showCreateDialog = false
+                    socketManager.emit("create-room", JSONObject().put("name", "").put("maxPlayers", 10).put("mafiaCount", 1).put("commissionerCount", 1).put("doctorCount", 1)) {}
+                }, colors = ButtonDefaults.buttonColors(containerColor = AccentPrimary)) { Text("Создать") }
+            },
+            dismissButton = { TextButton(onClick = { showCreateDialog = false }) { Text("Отмена", color = TextSecondary) } }
         )
     }
 }
 
 @Composable
 fun RoomCard(room: Room, onJoin: () -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp).clickable(onClick = onJoin),
-        colors = CardDefaults.cardColors(containerColor = SurfaceDark)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(12.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column {
-                Text(room.name, fontWeight = FontWeight.Bold, color = TextPrimary)
-                Text("${room.players} / ${room.maxPlayers} игроков", color = TextSecondary, fontSize = 14.sp)
-            }
-            Button(onClick = onJoin, colors = ButtonDefaults.buttonColors(containerColor = AccentSecondary)) {
-                Text("Войти")
-            }
+    Card(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp).clickable(onClick = onJoin), colors = CardDefaults.cardColors(containerColor = SurfaceDark)) {
+        Row(modifier = Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Column { Text(room.name, fontWeight = FontWeight.Bold, color = TextPrimary); Text("${room.players}/${room.maxPlayers}", color = TextSecondary, fontSize = 14.sp) }
+            Button(onClick = onJoin, colors = ButtonDefaults.buttonColors(containerColor = AccentSecondary)) { Text("Войти") }
         }
     }
-}
-
-@Composable
-fun CreateRoomDialog(onDismiss: () -> Unit, onCreate: (String, Int, Int, Int, Int) -> Unit) {
-    var name by remember { mutableStateOf("") }
-    var maxPlayers by remember { mutableStateOf(10) }
-    var mafiaCount by remember { mutableStateOf(1) }
-    var commissionerCount by remember { mutableStateOf(1) }
-    var doctorCount by remember { mutableStateOf(1) }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Новая комната") },
-        text = {
-            Column {
-                OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Название") }, modifier = Modifier.fillMaxWidth())
-                Spacer(modifier = Modifier.height(8.dp))
-                Text("Максимум игроков: $maxPlayers", color = TextSecondary)
-                Slider(value = maxPlayers.toFloat(), onValueChange = { maxPlayers = it.toInt() }, valueRange = 5f..10f, colors = SliderDefaults.colors(thumbColor = AccentPrimary, activeTrackColor = AccentPrimary))
-                Text("Мафия: $mafiaCount", color = TextSecondary)
-                Slider(value = mafiaCount.toFloat(), onValueChange = { mafiaCount = it.toInt() }, valueRange = 1f..(maxPlayers / 3).toFloat(), colors = SliderDefaults.colors(thumbColor = Danger, activeTrackColor = Danger))
-                Text("Шериф: $commissionerCount", color = TextSecondary)
-                Slider(value = commissionerCount.toFloat(), onValueChange = { commissionerCount = it.toInt() }, valueRange = 0f..3f, colors = SliderDefaults.colors(thumbColor = Warning, activeTrackColor = Warning))
-                Text("Врач: $doctorCount", color = TextSecondary)
-                Slider(value = doctorCount.toFloat(), onValueChange = { doctorCount = it.toInt() }, valueRange = 0f..3f, colors = SliderDefaults.colors(thumbColor = Success, activeTrackColor = Success))
-            }
-        },
-        confirmButton = {
-            Button(onClick = { onCreate(name, maxPlayers, mafiaCount, commissionerCount, doctorCount) }, colors = ButtonDefaults.buttonColors(containerColor = AccentPrimary)) { Text("Создать") }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Отмена", color = TextSecondary) }
-        }
-    )
 }

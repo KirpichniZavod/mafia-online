@@ -1,7 +1,7 @@
 Executing tasks: [:app:assembleDebug, :app:assembleDebugUnitTest, :app:assembleDebugAndroidTest] in project D:\game\android
 
 Starting Gradle Daemon...
-Gradle Daemon started in 1 s 251 ms
+Gradle Daemon started in 1 s 293 ms
 > Task :app:createDebugVariantModel UP-TO-DATE
 > Task :app:preBuild UP-TO-DATE
 > Task :app:preDebugBuild UP-TO-DATE
@@ -9,16 +9,18 @@ Gradle Daemon started in 1 s 251 ms
 > Task :app:checkKotlinGradlePluginConfigurationErrors
 > Task :app:checkDebugAarMetadata UP-TO-DATE
 > Task :app:generateDebugResValues UP-TO-DATE
-> Task :app:mapDebugSourceSetPaths
+> Task :app:mapDebugSourceSetPaths UP-TO-DATE
 > Task :app:generateDebugResources UP-TO-DATE
-> Task :app:packageDebugResources
+> Task :app:mergeDebugResources UP-TO-DATE
+> Task :app:packageDebugResources UP-TO-DATE
+> Task :app:parseDebugLocalResources UP-TO-DATE
 > Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
 > Task :app:extractDeepLinksDebug UP-TO-DATE
 > Task :app:processDebugMainManifest UP-TO-DATE
 > Task :app:processDebugManifest UP-TO-DATE
 > Task :app:processDebugManifestForPackage UP-TO-DATE
+> Task :app:processDebugResources UP-TO-DATE
 > Task :app:javaPreCompileDebug UP-TO-DATE
-> Task :app:parseDebugLocalResources
 > Task :app:mergeDebugShaders UP-TO-DATE
 > Task :app:compileDebugShaders NO-SOURCE
 > Task :app:generateDebugAssets UP-TO-DATE
@@ -27,7 +29,6 @@ Gradle Daemon started in 1 s 251 ms
 > Task :app:desugarDebugFileDependencies UP-TO-DATE
 > Task :app:checkDebugDuplicateClasses UP-TO-DATE
 > Task :app:mergeExtDexDebug UP-TO-DATE
-> Task :app:mergeDebugResources
 > Task :app:mergeLibDexDebug UP-TO-DATE
 > Task :app:mergeDebugJniLibFolders UP-TO-DATE
 > Task :app:mergeDebugNativeLibs NO-SOURCE
@@ -59,28 +60,48 @@ Gradle Daemon started in 1 s 251 ms
 > Task :app:stripDebugAndroidTestDebugSymbols NO-SOURCE
 > Task :app:validateSigningDebugAndroidTest UP-TO-DATE
 > Task :app:writeDebugAndroidTestSigningConfigVersions UP-TO-DATE
-> Task :app:processDebugResources
-Download https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-reflect/1.6.10/kotlin-reflect-1.6.10.pom, took 267 ms
-Download https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-script-runtime/1.9.22/kotlin-script-runtime-1.9.22.pom, took 290 ms
-Download https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-script-runtime/1.9.22/kotlin-script-runtime-1.9.22.jar, took 168 ms
-Download https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-reflect/1.6.10/kotlin-reflect-1.6.10.jar, took 806 ms
+
+> Task :app:compileDebugKotlin
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/navigation/NavGraph.kt:180:90 Unresolved reference: dp
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/game/GameScreen.kt:53:85 Passing value as a vararg is only allowed inside a parenthesized argument list
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/game/GameScreen.kt:55:84 Passing value as a vararg is only allowed inside a parenthesized argument list
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/game/GameScreen.kt:55:86 Cannot infer a type for this parameter. Please specify it explicitly.
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/game/GameScreen.kt:62:87 Passing value as a vararg is only allowed inside a parenthesized argument list
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/game/GameScreen.kt:62:89 Cannot infer a type for this parameter. Please specify it explicitly.
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/game/GameScreen.kt:84:28 Unresolved reference: optJSONArray
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/game/GameScreen.kt:94:25 No value passed for parameter 'role'
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/game/GameScreen.kt:110:88 Passing value as a vararg is only allowed inside a parenthesized argument list
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/game/GameScreen.kt:110:90 Cannot infer a type for this parameter. Please specify it explicitly.
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/game/GameScreen.kt:113:91 Passing value as a vararg is only allowed inside a parenthesized argument list
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/game/GameScreen.kt:113:93 Cannot infer a type for this parameter. Please specify it explicitly.
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/game/GameScreen.kt:127:26 Unresolved reference: getString
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/game/GameScreen.kt:128:30 Unresolved reference: getInt
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/game/GameScreen.kt:136:31 Unresolved reference: optString
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/game/GameScreen.kt:141:35 Unresolved reference: optString
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/game/GameScreen.kt:146:31 Unresolved reference: optString
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/game/GameScreen.kt:151:22 Unresolved reference: optInt
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/game/GameScreen.kt:157:22 Unresolved reference: optInt
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/game/GameScreen.kt:158:31 Unresolved reference: optString
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/game/GameScreen.kt:158:57 Unresolved reference: optString
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/game/GameScreen.kt:199:98 Passing value as a vararg is only allowed inside a parenthesized argument list
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/game/GameScreen.kt:199:100 Cannot infer a type for this parameter. Please specify it explicitly.
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/game/GameScreen.kt:217:132 Passing value as a vararg is only allowed inside a parenthesized argument list
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/game/GameScreen.kt:236:140 Passing value as a vararg is only allowed inside a parenthesized argument list
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/game/GameScreen.kt:255:133 Passing value as a vararg is only allowed inside a parenthesized argument list
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/game/GameScreen.kt:274:130 Passing value as a vararg is only allowed inside a parenthesized argument list
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/game/GameScreen.kt:281:137 Passing value as a vararg is only allowed inside a parenthesized argument list
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/lobby/LobbyScreen.kt:38:45 Passing value as a vararg is only allowed inside a parenthesized argument list
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/lobby/LobbyScreen.kt:38:47 Cannot infer a type for this parameter. Please specify it explicitly.
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/lobby/LobbyScreen.kt:57:45 Passing value as a vararg is only allowed inside a parenthesized argument list
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/lobby/LobbyScreen.kt:57:47 Cannot infer a type for this parameter. Please specify it explicitly.
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/lobby/LobbyScreen.kt:75:41 Passing value as a vararg is only allowed inside a parenthesized argument list
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/lobby/LobbyScreen.kt:75:43 Cannot infer a type for this parameter. Please specify it explicitly.
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/lobby/LobbyScreen.kt:131:106 Passing value as a vararg is only allowed inside a parenthesized argument list
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/lobby/LobbyScreen.kt:131:108 Cannot infer a type for this parameter. Please specify it explicitly.
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/lobby/LobbyScreen.kt:158:57 Passing value as a vararg is only allowed inside a parenthesized argument list
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/lobby/LobbyScreen.kt:158:59 Cannot infer a type for this parameter. Please specify it explicitly.
 
 > Task :app:compileDebugKotlin FAILED
-e: file:///D:/game/android/app/src/main/java/com/mafia/online/data/socket/SocketManager.kt:7:14 Unresolved reference: inject
-e: file:///D:/game/android/app/src/main/java/com/mafia/online/data/socket/SocketManager.kt:8:14 Unresolved reference: inject
-e: file:///D:/game/android/app/src/main/java/com/mafia/online/data/socket/SocketManager.kt:10:2 Unresolved reference: Singleton
-e: file:///D:/game/android/app/src/main/java/com/mafia/online/data/socket/SocketManager.kt:11:22 Unresolved reference: Inject
-e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/navigation/NavGraph.kt:83:40 Suspend function 'getToken' should be called only from a coroutine or another suspend function
-e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/navigation/NavGraph.kt:97:40 Suspend function 'getToken' should be called only from a coroutine or another suspend function
-e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/navigation/NavGraph.kt:111:40 Suspend function 'getToken' should be called only from a coroutine or another suspend function
-e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/profile/ProfileScreen.kt:54:25 Type mismatch: inferred type is Unit but GridItemSpan was expected
-e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/profile/ProfileScreen.kt:54:27 Unresolved reference: GridItemSpan
-e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/profile/ProfileScreen.kt:63:25 Type mismatch: inferred type is Unit but GridItemSpan was expected
-e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/profile/ProfileScreen.kt:63:27 Unresolved reference: GridItemSpan
-e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/profile/ProfileScreen.kt:103:25 Type mismatch: inferred type is Unit but GridItemSpan was expected
-e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/profile/ProfileScreen.kt:103:27 Unresolved reference: GridItemSpan
-e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/profile/ProfileScreen.kt:130:25 Type mismatch: inferred type is Unit but GridItemSpan was expected
-e: file:///D:/game/android/app/src/main/java/com/mafia/online/ui/screens/profile/ProfileScreen.kt:130:27 Unresolved reference: GridItemSpan
 
 FAILURE: Build failed with an exception.
 
@@ -95,5 +116,5 @@ Execution failed for task ':app:compileDebugKotlin'.
 > Run with --scan to get full insights.
 > Get more help at https://help.gradle.org.
 
-BUILD FAILED in 23s
-44 actionable tasks: 7 executed, 37 up-to-date
+BUILD FAILED in 17s
+44 actionable tasks: 2 executed, 42 up-to-date
