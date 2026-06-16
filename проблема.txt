@@ -1,88 +1,69 @@
+Ошибка подключения: xhr poll error
+
+up to date, audited 152 packages in 495ms
+24 packages are looking for funding
+  run `npm fund` for details
+3 high severity vulnerabilities
+To address all issues, run:
+  npm audit fix
+Run `npm audit` for details.
+Prisma schema loaded from prisma/schema.prisma
+✔ Generated Prisma Client (v5.22.0) to ./node_modules/@prisma/client in 88ms
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+Help us improve the Prisma ORM for everyone. Share your feedback in a short 2-min survey: https://pris.ly/orm/survey/release-5-22
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "mafia_34y5", schema "public" at "dpg-d8o3jqbtqb8s73ac6jhg-a"
+The database is already in sync with the Prisma schema.
+Running generate... (Use --skip-generate to skip the generators)
+Running generate... - Prisma Client
+✔ Generated Prisma Client (v5.22.0) to ./node_modules/@prisma/client in 84ms
 ==> Uploading build...
-==> Uploaded in 2.7s. Compression took 0.4s
+==> Uploaded in 2.9s. Compression took 0.4s
 ==> Build successful 🎉
 ==> Deploying...
 ==> Setting WEB_CONCURRENCY=1 by default, based on available CPUs in the instance
 ==> Running 'node src/index.js'
-[2026-06-15 20:38:06] 🗄️ Database connected
-[2026-06-15 20:38:06] 👑 Admin account exists: Anubis69
-[2026-06-15 20:38:06] ✔ Server running on port 10000
+[2026-06-16 10:37:54] 🗄️ Database connected
+[2026-06-16 10:37:54] 👑 Admin account exists: Anubis69
+[2026-06-16 10:37:54] ✔ Server running on port 10000
 ╔══════════════════════════════════════════╗
 ║  🎮 Mafia Online Server                  ║
 ║  Port: 10000                              ║
 ║  Client: https://mafia-online-lxgk.onrender.com  ║
 ╚══════════════════════════════════════════╝
-[2026-06-15 20:38:06] 📡 HEAD / → 404 (87ms) {"ip":"::1","browser":"?","os":"?"}
+[2026-06-16 10:37:55] 📡 HEAD / → 404 (4ms) {"ip":"::1","browser":"?","os":"?"}
 ==> Your service is live 🎉
-[2026-06-15 20:38:15] 📡 GET / → 404 (25ms) {"ip":"34.82.226.193","browser":"?","os":"?"}
 ==> 
+[2026-06-16 10:38:04] 📡 GET / → 404 (1ms) {"ip":"34.82.84.118","browser":"?","os":"?"}
 ==> ///////////////////////////////////////////////////////////
 ==> 
 ==> Available at your primary URL https://mafia-server-eljy.onrender.com
 ==> 
 ==> ///////////////////////////////////////////////////////////
-[2026-06-15 20:38:26] 🔌 CONNECT Anubis [vyBfYMgmSj0Y7CQwAAAC] {"ip":"31.76.50.109","browser":"Yandex 26.4.0.0","os":"Windows 10","device":"desktop"}
-[2026-06-15 20:38:26] 🔌 CONNECT 43ывапывап [cFZmuKoSL1A2-w3yAAAD] {"ip":"31.76.50.109","browser":"Yandex 26.4.0.0","os":"Windows 10","device":"desktop"}
-[2026-06-15 20:38:27] 🔌 CONNECT выфа4ыва [0jWZmeW1xwQBgumDAAAG] {"ip":"31.76.50.109","browser":"Yandex 26.4.0.0","os":"Windows 10","device":"desktop"}
-[2026-06-15 20:38:27] 🔌 CONNECT олгшнтрепивакмв [dKO76jYOBo-k3wzoAAAH] {"ip":"31.76.50.109","browser":"Yandex 26.4.0.0","os":"Windows 10","device":"desktop"}
-[2026-06-15 20:38:27] ✖ JOIN ERROR: Maximum call stack size exceeded
-[2026-06-15 20:38:28] ✖ JOIN ERROR: Maximum call stack size exceeded
-[2026-06-15 20:39:59] 🔌 CONNECT Anubis [lj7wBeEN3eJhNKdFAAAJ] {"ip":"31.76.119.158","browser":"Yandex 26.4.0.0","os":"Windows 10","device":"desktop"}
-[2026-06-15 20:40:00] 🔌 DISCONNECT Anubis [lj7wBeEN3eJhNKdFAAAJ] reason: client namespace disconnect
-[2026-06-15 20:40:00] 👑 ADMIN Anubis → VIEW USERS all {"ip":"31.76.119.158"}
-[2026-06-15 20:40:00] 👑 ADMIN Anubis → VIEW ROOMS all {"ip":"31.76.119.158"}
-[2026-06-15 20:40:01] 📡 GET /api/admin/users → 200 (289ms) {"ip":"31.76.119.158","browser":"Yandex 26.4.0.0","os":"Windows 10"}
-[2026-06-15 20:40:01] 📡 GET /api/admin/rooms → 200 (363ms) {"ip":"31.76.119.158","browser":"Yandex 26.4.0.0","os":"Windows 10"}
-[2026-06-15 20:40:07] 🔌 DISCONNECT Anubis [vyBfYMgmSj0Y7CQwAAAC] reason: transport close
-[2026-06-15 20:40:09] 👑 ADMIN Anubis → DELETE ROOM #1 "Дурачки" (5 players) {"ip":"31.76.119.158"}
-[2026-06-15 20:40:09] 📡 DELETE /api/admin/room/1 → 200 (231ms) {"ip":"31.76.119.158","browser":"Yandex 26.4.0.0","os":"Windows 10"}
-[2026-06-15 20:40:10] 👑 ADMIN Anubis → VIEW ROOMS all {"ip":"31.76.119.158"}
-[2026-06-15 20:40:10] 📡 GET /api/admin/rooms → 200 (6ms) {"ip":"31.76.119.158","browser":"Yandex 26.4.0.0","os":"Windows 10"}
-[2026-06-15 20:40:13] 👑 ADMIN Anubis → DELETE ROOM #2 "Дурачки" (1 players) {"ip":"31.76.119.158"}
-[2026-06-15 20:40:13] 📡 DELETE /api/admin/room/2 → 200 (8ms) {"ip":"31.76.119.158","browser":"Yandex 26.4.0.0","os":"Windows 10"}
-[2026-06-15 20:40:13] 👑 ADMIN Anubis → VIEW ROOMS all {"ip":"31.76.119.158"}
-[2026-06-15 20:40:13] 📡 GET /api/admin/rooms → 200 (8ms) {"ip":"31.76.119.158","browser":"Yandex 26.4.0.0","os":"Windows 10"}
-[2026-06-15 20:40:14] 📡 DELETE /api/admin/room/2 → 404 (3ms) {"ip":"31.76.119.158","browser":"Yandex 26.4.0.0","os":"Windows 10"}
-[2026-06-15 20:40:16] 👑 ADMIN Anubis → DELETE ROOM #3 "бочки" (5 players) {"ip":"31.76.119.158"}
-[2026-06-15 20:40:16] 📡 DELETE /api/admin/room/3 → 200 (12ms) {"ip":"31.76.119.158","browser":"Yandex 26.4.0.0","os":"Windows 10"}
-[2026-06-15 20:40:17] 👑 ADMIN Anubis → VIEW ROOMS all {"ip":"31.76.119.158"}
-[2026-06-15 20:40:17] 📡 GET /api/admin/rooms → 200 (3ms) {"ip":"31.76.119.158","browser":"Yandex 26.4.0.0","os":"Windows 10"}
-[2026-06-15 20:40:40] 👑 ADMIN Anubis → BAN 43ывапывап (until 2026-06-15T20:41:40.341Z) {"ip":"31.76.119.158"}
-[2026-06-15 20:40:40] 📡 POST /api/admin/ban/9 → 200 (16ms) {"ip":"31.76.119.158","browser":"Yandex 26.4.0.0","os":"Windows 10"}
-[2026-06-15 20:40:40] 👑 ADMIN Anubis → VIEW USERS all {"ip":"31.76.119.158"}
-[2026-06-15 20:40:40] 📡 GET /api/admin/users → 200 (11ms) {"ip":"31.76.119.158","browser":"Yandex 26.4.0.0","os":"Windows 10"}
-[2026-06-15 20:40:44] 🔌 CONNECT Anubis [iUTl4cHjk6QcYgUVAAAL] {"ip":"31.76.119.158","browser":"Yandex 26.4.0.0","os":"Windows 10","device":"desktop"}
-[2026-06-15 20:40:47] 🔌 DISCONNECT Anubis [iUTl4cHjk6QcYgUVAAAL] reason: client namespace disconnect
-[2026-06-15 20:40:54] 🔌 DISCONNECT 43ывапывап [cFZmuKoSL1A2-w3yAAAD] reason: transport close
-[2026-06-15 20:40:55] 🔌 CONNECT 645кнепа [2Rm7U0LOW-NeOcLCAAAN] {"ip":"138.124.123.198","browser":"Yandex 26.4.0.0","os":"Windows 10","device":"desktop"}
-[2026-06-15 20:41:05] 👑 ADMIN Anubis → UNBAN 43ывапывап {"ip":"31.76.119.158"}
-[2026-06-15 20:41:05] 📡 POST /api/admin/unban/9 → 200 (10ms) {"ip":"31.76.119.158","browser":"Yandex 26.4.0.0","os":"Windows 10"}
-[2026-06-15 20:41:06] 👑 ADMIN Anubis → VIEW USERS all {"ip":"31.76.119.158"}
-[2026-06-15 20:41:06] 📡 GET /api/admin/users → 200 (4ms) {"ip":"31.76.119.158","browser":"Yandex 26.4.0.0","os":"Windows 10"}
-[2026-06-15 20:41:19] 👑 ADMIN Anubis → BAN 645кнепа (until 2026-06-15T20:42:19.479Z) {"ip":"31.76.119.158"}
-[2026-06-15 20:41:19] 📡 POST /api/admin/ban/5 → 200 (8ms) {"ip":"31.76.119.158","browser":"Yandex 26.4.0.0","os":"Windows 10"}
-[2026-06-15 20:41:19] 👑 ADMIN Anubis → VIEW USERS all {"ip":"31.76.119.158"}
-[2026-06-15 20:41:19] 📡 GET /api/admin/users → 200 (8ms) {"ip":"31.76.119.158","browser":"Yandex 26.4.0.0","os":"Windows 10"}
-[2026-06-15 20:41:23] 🔌 CONNECT 645кнепа [wJ5baF0WdxfNnlTEAAAP] {"ip":"138.124.123.198","browser":"Yandex 26.4.0.0","os":"Windows 10","device":"desktop"}
-[2026-06-15 20:41:24] 🔌 DISCONNECT 645кнепа [wJ5baF0WdxfNnlTEAAAP] reason: client namespace disconnect
-[2026-06-15 20:41:25] 📡 GET /api/profile/me → 304 (313ms) {"ip":"138.124.123.198","browser":"Yandex 26.4.0.0","os":"Windows 10"}
-[2026-06-15 20:41:29] 🔌 CONNECT 645кнепа [ixjY32CaLgE64PdrAAAR] {"ip":"138.124.123.198","browser":"Yandex 26.4.0.0","os":"Windows 10","device":"desktop"}
-[2026-06-15 20:41:33] 🔌 DISCONNECT 645кнепа [2Rm7U0LOW-NeOcLCAAAN] reason: transport close
-[2026-06-15 20:41:33] ✖ CREATE ERROR: Maximum call stack size exceeded
-[2026-06-15 20:41:34] ✖ CREATE ERROR: Maximum call stack size exceeded
-[2026-06-15 20:41:35] ✖ CREATE ERROR: Maximum call stack size exceeded
-[2026-06-15 20:41:35] ✖ CREATE ERROR: Maximum call stack size exceeded
-[2026-06-15 20:41:36] ✖ CREATE ERROR: Maximum call stack size exceeded
-[2026-06-15 20:41:38] 🔌 CONNECT 645кнепа [VNBzb9BM2TE-SsWaAAAT] {"ip":"138.124.123.198","browser":"Yandex 26.4.0.0","os":"Windows 10","device":"desktop"}
-[2026-06-15 20:41:44] ✖ CREATE ERROR: Maximum call stack size exceeded
-[2026-06-15 20:41:44] ✖ CREATE ERROR: Maximum call stack size exceeded
-[2026-06-15 20:41:47] 🔌 CONNECT 645кнепа [NuAlhTyFWadR8uV1AAAV] {"ip":"138.124.123.198","browser":"Yandex 26.4.0.0","os":"Windows 10","device":"desktop"}
-[2026-06-15 20:41:47] 🔌 DISCONNECT 645кнепа [ixjY32CaLgE64PdrAAAR] reason: transport close
-[2026-06-15 20:41:56] 🔌 DISCONNECT 645кнепа [VNBzb9BM2TE-SsWaAAAT] reason: transport close
-[2026-06-15 20:42:07] 🔌 CONNECT Anubis [-sjKGX2vyirY1UDIAAAX] {"ip":"31.76.119.158","browser":"Yandex 26.4.0.0","os":"Windows 10","device":"desktop"}
-[2026-06-15 20:42:10] ✖ CREATE ERROR: Maximum call stack size exceeded
-[2026-06-15 20:42:19] ✖ CREATE ERROR: Maximum call stack size exceeded
-[2026-06-15 20:42:20] ✖ CREATE ERROR: Maximum call stack size exceeded
-[2026-06-15 20:42:20] ✖ CREATE ERROR: Maximum call stack size exceeded
-[2026-06-15 20:42:20] ✖ CREATE ERROR: Maximum call stack size exceeded
-[2026-06-15 20:42:20] ✖ CREATE ERROR: Maximum call stack size exceeded
+[2026-06-16 10:38:15] 🔌 CONNECT Anubis [b6U2cd5E7OlScQ1vAAAB] {"ip":"138.124.98.235","browser":"Yandex 26.4.0.0","os":"Windows 10","device":"desktop"}
+[2026-06-16 10:38:48] 🔌 CONNECT 645кнепа [Vp5vJ2BTT2ovIq0bAAAD] {"ip":"31.76.119.158","browser":"Yandex 26.4.0.0","os":"Windows 10","device":"desktop"}
+[2026-06-16 10:38:48] 📡 GET /api/profile/me → 200 (522ms) {"ip":"31.76.119.158","browser":"Yandex 26.4.0.0","os":"Windows 10"}
+[2026-06-16 10:38:49] 🏠 REJOIN 645кнепа → room #7
+[2026-06-16 10:38:50] 🔌 DISCONNECT 645кнепа [Vp5vJ2BTT2ovIq0bAAAD] reason: client namespace disconnect
+/opt/render/project/src/server/src/socket/index.js:52
+      for (const [roomId, game] of games.entries()) {
+                                         ^
+ReferenceError: games is not defined
+    at Socket.<anonymous> (/opt/render/project/src/server/src/socket/index.js:52:42)
+    at Socket.emit (node:events:508:28)
+    at Socket.emitReserved (/opt/render/project/src/server/node_modules/socket.io/dist/typed-events.js:56:22)
+    at Socket._onclose (/opt/render/project/src/server/node_modules/socket.io/dist/socket.js:554:14)
+    at Socket.ondisconnect (/opt/render/project/src/server/node_modules/socket.io/dist/socket.js:513:14)
+    at Socket._onpacket (/opt/render/project/src/server/node_modules/socket.io/dist/socket.js:442:22)
+    at /opt/render/project/src/server/node_modules/socket.io/dist/client.js:207:24
+    at process.processTicksAndRejections (node:internal/process/task_queues:85:11)
+Node.js v24.14.1
+==> Running 'node src/index.js'
+[2026-06-16 10:38:58] 🗄️ Database connected
+[2026-06-16 10:38:58] 👑 Admin account exists: Anubis69
+[2026-06-16 10:38:58] ✔ Server running on port 10000
+╔══════════════════════════════════════════╗
+║  🎮 Mafia Online Server                  ║
+║  Port: 10000                              ║
+║  Client: https://mafia-online-lxgk.onrender.com  ║
+╚══════════════════════════════════════════╝
