@@ -50,8 +50,8 @@ fun LobbyScreen(
 
     LaunchedEffect(Unit) {
         socketManager.connect("https://mafia-server-eljy.onrender.com", token)
-        socketManager.on("room-created") { parseRooms(it) }
-        socketManager.on("room-deleted") { parseRooms(it) }
+        socketManager.on("room-created") { socketManager.emit("get-rooms", JSONObject(), ::parseRooms) }
+        socketManager.on("room-deleted") { socketManager.emit("get-rooms", JSONObject(), ::parseRooms) }
         socketManager.emit("get-rooms", JSONObject(), ::parseRooms)
     }
 
@@ -77,27 +77,28 @@ fun LobbyScreen(
     }
 
     if (showCreateDialog) {
+        var dlgName by remember { mutableStateOf("") }
+        var dlgMax by remember { mutableStateOf(10) }
+        var dlgMafia by remember { mutableStateOf(1) }
+        var dlgSheriff by remember { mutableStateOf(1) }
+        var dlgDoctor by remember { mutableStateOf(1) }
+
         AlertDialog(
             onDismissRequest = { showCreateDialog = false },
             title = { Text("Новая комната") },
             text = {
-                var name by remember { mutableStateOf("") }
-                var max by remember { mutableStateOf(10) }
-                var mafia by remember { mutableStateOf(1) }
-                var sheriff by remember { mutableStateOf(1) }
-                var doctor by remember { mutableStateOf(1) }
                 Column {
-                    OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Название") }, modifier = Modifier.fillMaxWidth())
-                    Text("Макс: $max", color = TextSecondary); Slider(max.toFloat(), { max = it.toInt() }, valueRange = 5f..10f, colors = SliderDefaults.colors(thumbColor = AccentPrimary, activeTrackColor = AccentPrimary))
-                    Text("Мафия: $mafia", color = TextSecondary); Slider(mafia.toFloat(), { mafia = it.toInt() }, valueRange = 1f..(max/3).toFloat(), colors = SliderDefaults.colors(thumbColor = Danger, activeTrackColor = Danger))
-                    Text("Шериф: $sheriff", color = TextSecondary); Slider(sheriff.toFloat(), { sheriff = it.toInt() }, valueRange = 0f..3f, colors = SliderDefaults.colors(thumbColor = Warning, activeTrackColor = Warning))
-                    Text("Врач: $doctor", color = TextSecondary); Slider(doctor.toFloat(), { doctor = it.toInt() }, valueRange = 0f..3f, colors = SliderDefaults.colors(thumbColor = Success, activeTrackColor = Success))
+                    OutlinedTextField(value = dlgName, onValueChange = { dlgName = it }, label = { Text("Название") }, modifier = Modifier.fillMaxWidth())
+                    Text("Макс: $dlgMax", color = TextSecondary); Slider(dlgMax.toFloat(), { dlgMax = it.toInt() }, valueRange = 5f..10f, colors = SliderDefaults.colors(thumbColor = AccentPrimary, activeTrackColor = AccentPrimary))
+                    Text("Мафия: $dlgMafia", color = TextSecondary); Slider(dlgMafia.toFloat(), { dlgMafia = it.toInt() }, valueRange = 1f..(dlgMax/3).toFloat(), colors = SliderDefaults.colors(thumbColor = Danger, activeTrackColor = Danger))
+                    Text("Шериф: $dlgSheriff", color = TextSecondary); Slider(dlgSheriff.toFloat(), { dlgSheriff = it.toInt() }, valueRange = 0f..3f, colors = SliderDefaults.colors(thumbColor = Warning, activeTrackColor = Warning))
+                    Text("Врач: $dlgDoctor", color = TextSecondary); Slider(dlgDoctor.toFloat(), { dlgDoctor = it.toInt() }, valueRange = 0f..3f, colors = SliderDefaults.colors(thumbColor = Success, activeTrackColor = Success))
                 }
             },
             confirmButton = {
                 Button(onClick = {
                     showCreateDialog = false
-                    socketManager.emit("create-room", JSONObject().put("name", "").put("maxPlayers", 10).put("mafiaCount", 1).put("commissionerCount", 1).put("doctorCount", 1)) {}
+                    socketManager.emit("create-room", JSONObject().put("name", dlgName).put("maxPlayers", dlgMax).put("mafiaCount", dlgMafia).put("commissionerCount", dlgSheriff).put("doctorCount", dlgDoctor)) {}
                 }, colors = ButtonDefaults.buttonColors(containerColor = AccentPrimary)) { Text("Создать") }
             },
             dismissButton = { TextButton(onClick = { showCreateDialog = false }) { Text("Отмена", color = TextSecondary) } }

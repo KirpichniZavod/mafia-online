@@ -10,9 +10,8 @@ class SocketManager {
     private var socket: Socket? = null
 
     fun connect(serverUrl: String, token: String) {
-        val opts = IO.Options.builder()
-            .setAuth(mapOf("token" to token))
-            .build()
+        val opts = IO.Options()
+        opts.setAuth(mapOf("token" to token))
         socket = IO.socket(serverUrl, opts)
         socket?.connect()
     }

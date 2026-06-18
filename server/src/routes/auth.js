@@ -58,7 +58,7 @@ router.post('/register', async (req, res) => {
 
     res.status(201).json({
       token,
-      user: { id: user.id, nickname: user.nickname, isAdmin: user.isAdmin }
+      user: { id: user.id, nickname: user.nickname, login: user.login, isAdmin: user.isAdmin, isBanned: false, theme: 'dark', avatar: null, wins: 0, losses: 0, gamesPlayed: 0, createdAt: user.createdAt.toISOString() }
     });
   } catch (error) {
     log.log('auth', log.ICONS.error, `REGISTER ERROR: ${error.message}`, { ip });
@@ -116,7 +116,7 @@ router.post('/login', async (req, res) => {
 
     res.json({
       token,
-      user: { id: user.id, nickname: user.nickname, isAdmin: user.isAdmin }
+      user: { id: user.id, nickname: user.nickname, login: user.login, isAdmin: user.isAdmin, isBanned: false, theme: user.theme || 'dark', avatar: user.avatar, wins: user.wins, losses: user.losses, gamesPlayed: user.gamesPlayed, createdAt: user.createdAt.toISOString() }
     });
   } catch (error) {
     log.log('auth', log.ICONS.error, `LOGIN ERROR: ${error.message}`, { ip });

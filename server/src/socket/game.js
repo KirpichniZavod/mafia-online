@@ -102,6 +102,7 @@ function gameHandler(io, socket, prisma) {
   socket.on('get-players', async (data, callback) => {
     try {
       const rid = parseInt(data.roomId);
+      const room = await prisma.room.findUnique({ where: { id: rid } });
       const players = await prisma.player.findMany({
         where: { roomId: rid },
         include: { user: { select: { id: true, nickname: true, avatar: true } } }
@@ -112,7 +113,8 @@ function gameHandler(io, socket, prisma) {
           nickname: p.user.nickname,
           avatar: p.user.avatar,
           role: p.role,
-          isAlive: p.isAlive
+          isAlive: p.isAlive,
+          isHost: p.userId === room?.hostId
         }))
       });
     } catch (error) {

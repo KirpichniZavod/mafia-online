@@ -42,9 +42,8 @@ router.get('/me', async (req, res) => {
     const user = await prisma.user.findUnique({
       where: { id: req.user.id },
       select: {
-        id: true, nickname: true, login: true, isAdmin: true,
-        theme: true, avatar: true, wins: true, losses: true,
-        gamesPlayed: true, createdAt: true
+        id: true, nickname: true, login: true, isAdmin: true, isBanned: true, banReason: true, banUntil: true,
+        theme: true, avatar: true, wins: true, losses: true, gamesPlayed: true, createdAt: true
       }
     });
     res.json(user);
