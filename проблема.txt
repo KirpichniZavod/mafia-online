@@ -1,20 +1,100 @@
-> Task :app:compileDebugKotlin
-e: file:///D:/game/android/app/src/main/java/com/mafia/online/data/socket/SocketManager.kt:16:22 Type mismatch: inferred type is Map<String, String> but String! was expected
-
-> Task :app:compileDebugKotlin FAILED
-
-FAILURE: Build failed with an exception.
-
-* What went wrong:
-Execution failed for task ':app:compileDebugKotlin'.
-> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction
-   > Compilation error. See log for more details
-
-* Try:
-> Run with --stacktrace option to get the stack trace.
-> Run with --info or --debug option to get more log output.
-> Run with --scan to get full insights.
-> Get more help at https://help.gradle.org.
-
-BUILD FAILED in 17s
-44 actionable tasks: 2 executed, 42 up-to-date
+2026-06-18T23:12:17.318680191Z ==> Downloading cache...
+2026-06-18T23:12:17.355203618Z ==> Cloning from https://github.com/KirpichniZavod/mafia-online
+2026-06-18T23:12:22.928061238Z ==> Checking out commit 96329cb342bbb0fffffb3a7918b774a21e6f47ca in branch master
+2026-06-18T23:12:25.585380035Z ==> Downloaded 66MB in 7s. Extraction took 1s.
+2026-06-18T23:12:26.433657899Z ==> Using Node.js version 24.14.1 (default)
+2026-06-18T23:12:26.43367133Z ==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+2026-06-18T23:12:26.480666965Z ==> Running build command 'npm install && npx prisma generate && npx prisma db push --accept-data-loss'...
+2026-06-18T23:12:27.170348873Z 
+2026-06-18T23:12:27.170370994Z up to date, audited 152 packages in 567ms
+2026-06-18T23:12:27.170383405Z 
+2026-06-18T23:12:27.170504194Z 24 packages are looking for funding
+2026-06-18T23:12:27.170572449Z   run `npm fund` for details
+2026-06-18T23:12:27.174526333Z 
+2026-06-18T23:12:27.174541994Z 3 high severity vulnerabilities
+2026-06-18T23:12:27.174545175Z 
+2026-06-18T23:12:27.174548305Z To address all issues, run:
+2026-06-18T23:12:27.174550965Z   npm audit fix
+2026-06-18T23:12:27.174553405Z 
+2026-06-18T23:12:27.174555926Z Run `npm audit` for details.
+2026-06-18T23:12:27.866821475Z Prisma schema loaded from prisma/schema.prisma
+2026-06-18T23:12:28.1337667Z 
+2026-06-18T23:12:28.133793492Z ✔ Generated Prisma Client (v5.22.0) to ./node_modules/@prisma/client in 74ms
+2026-06-18T23:12:28.133798322Z 
+2026-06-18T23:12:28.133802753Z Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+2026-06-18T23:12:28.133806753Z 
+2026-06-18T23:12:28.133811843Z Tip: Interested in query caching in just a few lines of code? Try Accelerate today! https://pris.ly/tip-3-accelerate
+2026-06-18T23:12:28.133817274Z 
+2026-06-18T23:12:28.991728264Z Prisma schema loaded from prisma/schema.prisma
+2026-06-18T23:12:28.994183056Z Datasource "db": PostgreSQL database "mafia_34y5", schema "public" at "dpg-d8o3jqbtqb8s73ac6jhg-a"
+2026-06-18T23:12:29.628387727Z 
+2026-06-18T23:12:29.628410059Z The database is already in sync with the Prisma schema.
+2026-06-18T23:12:29.628497726Z 
+2026-06-18T23:12:29.629329408Z Running generate... (Use --skip-generate to skip the generators)
+2026-06-18T23:12:29.812933004Z Running generate... - Prisma Client
+2026-06-18T23:12:29.910274514Z ✔ Generated Prisma Client (v5.22.0) to ./node_modules/@prisma/client in 96ms
+2026-06-18T23:12:29.910331048Z 
+2026-06-18T23:12:31.381689465Z ==> Uploading build...
+2026-06-18T23:12:34.636361231Z ==> Uploaded in 2.7s. Compression took 0.5s
+2026-06-18T23:12:34.646894655Z ==> Build successful 🎉
+2026-06-18T23:12:38.59879477Z ==> Deploying...
+2026-06-18T23:12:38.684525357Z ==> Setting WEB_CONCURRENCY=1 by default, based on available CPUs in the instance
+2026-06-18T23:12:46.725285226Z ==> Running 'node src/index.js'
+2026-06-18T23:12:49.044820138Z [2026-06-18 23:12:49] 🗄️ Database connected
+2026-06-18T23:12:49.051148859Z [2026-06-18 23:12:49] 👑 Admin account exists: Anubis69
+2026-06-18T23:12:49.052463769Z [2026-06-18 23:12:49] ✔ Server running on port 10000
+2026-06-18T23:12:49.052475539Z 
+2026-06-18T23:12:49.05253182Z ╔══════════════════════════════════════════╗
+2026-06-18T23:12:49.052548771Z ║  🎮 Mafia Online Server                  ║
+2026-06-18T23:12:49.052620382Z ║  Port: 10000                              ║
+2026-06-18T23:12:49.052626033Z ║  Client: https://mafia-online-lxgk.onrender.com  ║
+2026-06-18T23:12:49.052691404Z ╚══════════════════════════════════════════╝
+2026-06-18T23:12:49.052756415Z 
+2026-06-18T23:12:49.323872681Z [2026-06-18 23:12:49] 📡 HEAD / → 404 (61ms) {"ip":"::1","browser":"?","os":"?"}
+2026-06-18T23:12:49.323908671Z [2026-06-18 23:12:49] 📡 HEAD / → 404 (4ms) {"ip":"::1","browser":"?","os":"?"}
+2026-06-18T23:12:59.742949808Z ==> Your service is live 🎉
+2026-06-18T23:12:59.85726532Z ==> 
+2026-06-18T23:12:59.860067194Z ==> ///////////////////////////////////////////////////////////
+2026-06-18T23:12:59.862462459Z ==> 
+2026-06-18T23:12:59.865272753Z ==> Available at your primary URL https://mafia-server-eljy.onrender.com
+2026-06-18T23:12:59.867855662Z ==> 
+2026-06-18T23:12:59.870506363Z ==> ///////////////////////////////////////////////////////////
+2026-06-18T23:12:59.828023543Z [2026-06-18 23:12:59] 📡 GET / → 404 (1ms) {"ip":"34.19.73.234","browser":"?","os":"?"}
+2026-06-18T23:12:59.828043113Z [2026-06-18 23:12:59] 📡 GET / → 404 (1ms) {"ip":"34.19.73.234","browser":"?","os":"?"}
+2026-06-18T23:12:59.832541614Z [2026-06-18 23:12:59] 🔌 CONNECT Anubis [BOeBub4zSRIskorGAAAC] {"ip":"31.76.119.158","browser":"Yandex 26.4.0.0","os":"Windows 10","device":"desktop"}
+2026-06-18T23:13:00.071492229Z [2026-06-18 23:13:00] 🔌 CONNECT Anubis [58XMCgaTe7vXmG2hAAAD] {"ip":"31.76.119.158","browser":"Yandex 26.4.0.0","os":"Windows 10","device":"desktop"}
+2026-06-18T23:13:00.438181081Z [2026-06-18 23:13:00] 📡 GET /api/profile/me → 200 (821ms) {"ip":"31.76.119.158","browser":"?","os":"?"}
+2026-06-18T23:13:00.438206102Z [2026-06-18 23:13:00] 📡 GET /api/profile/me → 200 (821ms) {"ip":"31.76.119.158","browser":"?","os":"?"}
+2026-06-18T23:13:04.791901909Z [2026-06-18 23:13:04] 🔌 CONNECT Anubis [HedTQhv8Zn7Mcz0AAAAF] {"ip":"31.76.119.158","browser":"?","os":"?","device":"desktop"}
+2026-06-18T23:13:04.892627593Z [2026-06-18 23:13:04] 📡 GET /api/profile/me → 200 (4ms) {"ip":"31.76.119.158","browser":"?","os":"?"}
+2026-06-18T23:13:04.892645623Z [2026-06-18 23:13:04] 📡 GET /api/profile/me → 200 (4ms) {"ip":"31.76.119.158","browser":"?","os":"?"}
+2026-06-18T23:13:05.045008261Z [2026-06-18 23:13:05] 🔌 DISCONNECT Anubis [HedTQhv8Zn7Mcz0AAAAF] reason: transport close
+2026-06-18T23:13:06.586042291Z [2026-06-18 23:13:06] 🔌 CONNECT Anubis [sBD0UlN1-UU2Gc02AAAH] {"ip":"31.76.119.158","browser":"?","os":"?","device":"desktop"}
+2026-06-18T23:13:06.844784958Z /opt/render/project/src/server/src/socket/room.js:206
+2026-06-18T23:13:06.844813429Z       callback({ error: 'Failed to get rooms' });
+2026-06-18T23:13:06.844817339Z       ^
+2026-06-18T23:13:06.844820609Z 
+2026-06-18T23:13:06.844824299Z TypeError: callback is not a function
+2026-06-18T23:13:06.844827749Z     at Socket.<anonymous> (/opt/render/project/src/server/src/socket/room.js:206:7)
+2026-06-18T23:13:06.84484575Z 
+2026-06-18T23:13:06.84484913Z Node.js v24.14.1
+2026-06-18T23:13:12.544467757Z ==> Running 'node src/index.js'
+2026-06-18T23:13:15.130957289Z [2026-06-18 23:13:15] 🗄️ Database connected
+2026-06-18T23:13:15.144197835Z [2026-06-18 23:13:15] 👑 Admin account exists: Anubis69
+2026-06-18T23:13:15.145618047Z [2026-06-18 23:13:15] ✔ Server running on port 10000
+2026-06-18T23:13:15.145637177Z 
+2026-06-18T23:13:15.145725649Z ╔══════════════════════════════════════════╗
+2026-06-18T23:13:15.145732939Z ║  🎮 Mafia Online Server                  ║
+2026-06-18T23:13:15.145735839Z ║  Port: 10000                              ║
+2026-06-18T23:13:15.145808301Z ║  Client: https://mafia-online-lxgk.onrender.com  ║
+2026-06-18T23:13:15.145823711Z ╚══════════════════════════════════════════╝
+2026-06-18T23:13:15.145864242Z 
+2026-06-18T23:13:20.132961295Z [2026-06-18 23:13:20] 🔌 CONNECT Anubis [NGAjTpDturGq1vmJAAAB] {"ip":"31.76.119.158","browser":"?","os":"?","device":"desktop"}
+2026-06-18T23:13:20.778915112Z /opt/render/project/src/server/src/socket/room.js:206
+2026-06-18T23:13:20.778942902Z       callback({ error: 'Failed to get rooms' });
+2026-06-18T23:13:20.778946892Z       ^
+2026-06-18T23:13:20.778949703Z 
+2026-06-18T23:13:20.778953533Z TypeError: callback is not a function
+2026-06-18T23:13:20.778957413Z     at Socket.<anonymous> (/opt/render/project/src/server/src/socket/room.js:206:7)
+2026-06-18T23:13:20.778960163Z 
+2026-06-18T23:13:20.778963223Z Node.js v24.14.1

@@ -198,7 +198,8 @@ function gameHandler(io, socket, prisma) {
     try {
       const { roomId, targetId: rawTargetId } = data;
       const targetId = parseInt(rawTargetId);
-      const game = games.get(roomId);
+      const rid = parseInt(roomId);
+      const game = games.get(rid);
       if (!game || game.phase !== 'night') return callback({ error: 'Not night' });
 
       const player = await prisma.player.findFirst({
@@ -363,7 +364,6 @@ function startDayTimer(io, roomId, game) {
 }
 
 async function checkNightComplete(io, roomId, game) {
-  const requiredRoles = ['mafia', 'commissioner', 'doctor'];
   const actedRoles = new Set();
 
   for (const [userId, action] of Object.entries(game.nightActions)) {
@@ -593,6 +593,10 @@ function checkWinCondition(players) {
 
 async function endGame(io, roomId, winner, players) {
   log.game.end(roomId, winner);
+
+  for (const key of players_cache.keys()) {
+    if (key.startsWith(roomId + '-')) players_cache.delete(key);
+  }
 
   await prisma.room.update({
     where: { id: roomId },

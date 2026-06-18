@@ -1,5 +1,6 @@
 package com.mafia.online.data.socket
 
+import io.socket.client.Ack
 import io.socket.client.IO
 import io.socket.client.Socket
 import io.socket.emitter.Emitter
@@ -32,12 +33,12 @@ class SocketManager {
 
     fun emit(event: String, data: JSONObject, callback: ((JSONObject) -> Unit)? = null) {
         if (callback != null) {
-            socket?.emit(event, object : Emitter.Listener {
+            socket?.emit(event, data, object : Ack {
                 override fun call(vararg args: Any?) {
                     val response = args.firstOrNull() as? JSONObject
                     if (response != null) callback(response)
                 }
-            }, data)
+            })
         } else {
             socket?.emit(event, data)
         }

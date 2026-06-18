@@ -12,6 +12,7 @@ import androidx.navigation.navArgument
 import com.mafia.online.data.api.ApiService
 import com.mafia.online.data.model.User
 import com.mafia.online.data.repository.AuthRepository
+import com.mafia.online.ui.screens.admin.AdminScreen
 import com.mafia.online.ui.screens.banned.BannedScreen
 import com.mafia.online.ui.screens.game.GameScreen
 import com.mafia.online.ui.screens.lobby.LobbyScreen
@@ -66,11 +67,12 @@ fun MafiaNavGraph() {
     Scaffold(
         bottomBar = {
             if (user != null) {
+                val currentRoute = navController.currentBackStackEntry?.destination?.route
                 NavigationBar(containerColor = CardDark) {
                     NavigationBarItem(
                         icon = { Text("🏠") },
                         label = { Text("Лобби") },
-                        selected = false,
+                        selected = currentRoute == "lobby",
                         onClick = { navController.navigate("lobby") { popUpTo("lobby") { inclusive = true } } },
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = AccentGlow,
@@ -83,7 +85,7 @@ fun MafiaNavGraph() {
                     NavigationBarItem(
                         icon = { Text("👤") },
                         label = { Text("Профиль") },
-                        selected = false,
+                        selected = currentRoute == "profile",
                         onClick = { navController.navigate("profile") { popUpTo("lobby") } },
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = AccentGlow,
@@ -97,7 +99,7 @@ fun MafiaNavGraph() {
                         NavigationBarItem(
                             icon = { Text("👑") },
                             label = { Text("Админ") },
-                            selected = false,
+                            selected = currentRoute == "admin",
                             onClick = { navController.navigate("admin") { popUpTo("lobby") } },
                             colors = NavigationBarItemDefaults.colors(
                                 selectedIconColor = AccentGlow,
@@ -111,7 +113,7 @@ fun MafiaNavGraph() {
                     NavigationBarItem(
                         icon = { Text("⚙️") },
                         label = { Text("Настройки") },
-                        selected = false,
+                        selected = currentRoute == "settings",
                         onClick = { navController.navigate("settings") { popUpTo("lobby") } },
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = AccentGlow,
@@ -135,6 +137,7 @@ fun MafiaNavGraph() {
                     onLogin = { userData, userToken ->
                         user = userData
                         token = userToken
+                        scope.launch { repository.saveToken(userToken) }
                         navController.navigate("lobby") { popUpTo("login") { inclusive = true } }
                     },
                     onRegister = { navController.navigate("register") }
@@ -192,7 +195,10 @@ fun MafiaNavGraph() {
             }
 
             composable("admin") {
-                Text("Админ-панель", color = TextPrimary, modifier = Modifier.padding(16.dp))
+                val currentToken = token ?: return@composable
+                user?.let { u ->
+                    AdminScreen(user = u, token = currentToken)
+                }
             }
 
             composable("settings") {

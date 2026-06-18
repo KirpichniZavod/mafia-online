@@ -76,9 +76,9 @@ fun GameScreen(user: User, token: String, roomId: String, onLeave: () -> Unit, o
             }
         }
         sm.on("game-started") { phase = "night"; day = 1; actionMade = false; nightResult = null; voteResult = null; winner = null; checkResult = null; sm.emit("get-role", JSONObject().put("roomId", roomId.toInt())) { r -> if (r.has("role")) { role = r.getString("role"); isAlive = r.optBoolean("isAlive", true) } }; loadPlayers() }
-        sm.on("phase-change") { d -> phase = d.getString("phase"); day = d.getInt("dayNumber"); actionMade = false; nightResult = null; voteResult = null; checkResult = null }
-        sm.on("night-result") { d -> nightResult = d.optString("killedNickname", null)?.let { "💀 $it был убит" } ?: "Ночь спокойна" }
-        sm.on("vote-result") { d -> voteResult = d.optString("eliminatedNickname", null)?.let { "🗳️ $it исключён" } ?: "Никто не исключён" }
+        sm.on("phase-change") { d -> phase = d.getString("phase"); day = d.getInt("dayNumber"); actionMade = false; nightResult = null; voteResult = null; checkResult = null; loadPlayers() }
+        sm.on("night-result") { d -> nightResult = d.optString("killedNickname", null)?.let { "💀 $it был убит" } ?: "Ночь спокойна"; loadPlayers() }
+        sm.on("vote-result") { d -> voteResult = d.optString("eliminatedNickname", null)?.let { "🗳️ $it исключён" } ?: "Никто не исключён"; loadPlayers() }
         sm.on("game-ended") { d -> winner = d.optString("winner"); phase = "ended" }
         sm.on("check-result") { d -> val target = players.find { it.id == d.optInt("targetId") }; checkResult = "🔍 ${target?.nickname}: ${if (d.optBoolean("isMafia")) "МАФИЯ" else "не мафия"}" }
         sm.on("don-check-result") { d -> val target = players.find { it.id == d.optInt("targetId") }; checkResult = "🍷 ${target?.nickname}: ${if (d.optBoolean("isSheriff")) "ШЕРИФ" else "не шериф"}" }
@@ -117,7 +117,7 @@ fun GameScreen(user: User, token: String, roomId: String, onLeave: () -> Unit, o
                     Text("Игроки (${players.count { it.isAlive }})", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
                     players.forEach { p ->
                         Row(
-                            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp).clickable { /* TODO: show profile */ },
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp).clickable { selectedProfile = User(p.id, p.nickname) },
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {

@@ -164,6 +164,7 @@ function roomHandler(io, socket, db) {
         } else {
           if (rd.host === uid()) {
             rd.host = rd.players[0];
+            await db.room.update({ where: { id: roomId }, data: { hostId: rd.host } });
             log.log('room', log.ICONS.room, 'HOST TRANSFER #' + roomId);
           }
           const players = await db.player.findMany({

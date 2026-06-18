@@ -119,6 +119,9 @@ router.get('/stats', async (req, res) => {
 router.get('/history', async (req, res) => {
   try {
     const games = await prisma.gameHistory.findMany({
+      where: {
+        players: { contains: '"nickname":"' + req.user.nickname + '"' }
+      },
       orderBy: { createdAt: 'desc' },
       take: 20
     });

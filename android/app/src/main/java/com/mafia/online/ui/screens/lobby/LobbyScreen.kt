@@ -82,6 +82,7 @@ fun LobbyScreen(
         var dlgMafia by remember { mutableStateOf(1) }
         var dlgSheriff by remember { mutableStateOf(1) }
         var dlgDoctor by remember { mutableStateOf(1) }
+        var dlgDon by remember { mutableStateOf(0) }
 
         AlertDialog(
             onDismissRequest = { showCreateDialog = false },
@@ -93,12 +94,13 @@ fun LobbyScreen(
                     Text("Мафия: $dlgMafia", color = TextSecondary); Slider(dlgMafia.toFloat(), { dlgMafia = it.toInt() }, valueRange = 1f..(dlgMax/3).toFloat(), colors = SliderDefaults.colors(thumbColor = Danger, activeTrackColor = Danger))
                     Text("Шериф: $dlgSheriff", color = TextSecondary); Slider(dlgSheriff.toFloat(), { dlgSheriff = it.toInt() }, valueRange = 0f..3f, colors = SliderDefaults.colors(thumbColor = Warning, activeTrackColor = Warning))
                     Text("Врач: $dlgDoctor", color = TextSecondary); Slider(dlgDoctor.toFloat(), { dlgDoctor = it.toInt() }, valueRange = 0f..3f, colors = SliderDefaults.colors(thumbColor = Success, activeTrackColor = Success))
+                    Text("Дон: $dlgDon", color = TextSecondary); Slider(dlgDon.toFloat(), { dlgDon = it.toInt() }, valueRange = 0f..2f, colors = SliderDefaults.colors(thumbColor = Color(0xFF8B4513), activeTrackColor = Color(0xFF8B4513)))
                 }
             },
             confirmButton = {
                 Button(onClick = {
                     showCreateDialog = false
-                    socketManager.emit("create-room", JSONObject().put("name", dlgName).put("maxPlayers", dlgMax).put("mafiaCount", dlgMafia).put("commissionerCount", dlgSheriff).put("doctorCount", dlgDoctor)) {}
+                    socketManager.emit("create-room", JSONObject().put("name", dlgName).put("maxPlayers", dlgMax).put("mafiaCount", dlgMafia).put("commissionerCount", dlgSheriff).put("doctorCount", dlgDoctor).put("donCount", dlgDon)) {}
                 }, colors = ButtonDefaults.buttonColors(containerColor = AccentPrimary)) { Text("Создать") }
             },
             dismissButton = { TextButton(onClick = { showCreateDialog = false }) { Text("Отмена", color = TextSecondary) } }
