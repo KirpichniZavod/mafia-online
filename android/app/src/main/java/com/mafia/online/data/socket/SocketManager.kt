@@ -4,15 +4,17 @@ import io.socket.client.IO
 import io.socket.client.Socket
 import io.socket.emitter.Emitter
 import org.json.JSONObject
+import java.net.URI
 
 class SocketManager {
 
     private var socket: Socket? = null
 
     fun connect(serverUrl: String, token: String) {
+        val uri = URI.create(serverUrl)
         val opts = IO.Options()
-        opts.setAuth(mapOf("token" to token))
-        socket = IO.socket(serverUrl, opts)
+        opts.query = mapOf("token" to token)
+        socket = IO.socket(uri, opts)
         socket?.connect()
     }
 

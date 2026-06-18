@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 
 function socketHandler(io) {
   io.use(async (socket, next) => {
-    const token = socket.handshake.auth.token;
+    const token = socket.handshake.auth?.token || socket.handshake.query?.token;
 
     if (!token) {
       log.log('socket', log.ICONS.error, 'Connection rejected — no token');
