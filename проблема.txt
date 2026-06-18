@@ -1,5 +1,5 @@
 > Task :app:compileDebugKotlin
-e: file:///D:/game/android/app/src/main/java/com/mafia/online/data/socket/SocketManager.kt:14:14 Unresolved reference: setAuth
+e: file:///D:/game/android/app/src/main/java/com/mafia/online/data/socket/SocketManager.kt:16:22 Type mismatch: inferred type is Map<String, String> but String! was expected
 
 > Task :app:compileDebugKotlin FAILED
 
@@ -16,5 +16,5 @@ Execution failed for task ':app:compileDebugKotlin'.
 > Run with --scan to get full insights.
 > Get more help at https://help.gradle.org.
 
-BUILD FAILED in 20s
+BUILD FAILED in 17s
 44 actionable tasks: 2 executed, 42 up-to-date

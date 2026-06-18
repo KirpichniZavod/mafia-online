@@ -11,10 +11,8 @@ class SocketManager {
     private var socket: Socket? = null
 
     fun connect(serverUrl: String, token: String) {
-        val uri = URI.create(serverUrl)
-        val opts = IO.Options()
-        opts.query = mapOf("token" to token)
-        socket = IO.socket(uri, opts)
+        val uri = URI.create("$serverUrl?token=$token")
+        socket = IO.socket(uri)
         socket?.connect()
     }
 
