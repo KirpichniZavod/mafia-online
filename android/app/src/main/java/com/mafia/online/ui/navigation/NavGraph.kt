@@ -18,6 +18,7 @@ import com.mafia.online.ui.screens.lobby.LobbyScreen
 import com.mafia.online.ui.screens.login.LoginScreen
 import com.mafia.online.ui.screens.profile.ProfileScreen
 import com.mafia.online.ui.screens.register.RegisterScreen
+import com.mafia.online.ui.screens.settings.SettingsScreen
 import com.mafia.online.ui.theme.*
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
@@ -107,6 +108,19 @@ fun MafiaNavGraph() {
                             )
                         )
                     }
+                    NavigationBarItem(
+                        icon = { Text("⚙️") },
+                        label = { Text("Настройки") },
+                        selected = false,
+                        onClick = { navController.navigate("settings") { popUpTo("lobby") } },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = AccentGlow,
+                            unselectedIconColor = TextMuted,
+                            selectedTextColor = AccentGlow,
+                            unselectedTextColor = TextMuted,
+                            indicatorColor = AccentPrimary.copy(alpha = 0.2f)
+                        )
+                    )
                 }
             }
         }
@@ -179,6 +193,14 @@ fun MafiaNavGraph() {
 
             composable("admin") {
                 Text("Админ-панель", color = TextPrimary, modifier = Modifier.padding(16.dp))
+            }
+
+            composable("settings") {
+                SettingsScreen(
+                    currentTheme = "dark",
+                    onThemeChange = { /* TODO: save theme */ },
+                    onBack = { navController.popBackStack() }
+                )
             }
         }
     }

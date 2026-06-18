@@ -3,17 +3,17 @@ package com.mafia.online.data.model
 data class User(
     val id: Int,
     val nickname: String,
-    val login: String,
-    val isAdmin: Boolean,
-    val isBanned: Boolean,
-    val banReason: String?,
-    val banUntil: String?,
-    val theme: String,
-    val avatar: String?,
-    val wins: Int,
-    val losses: Int,
-    val gamesPlayed: Int,
-    val createdAt: String
+    val login: String = "",
+    val isAdmin: Boolean = false,
+    val isBanned: Boolean = false,
+    val banReason: String? = null,
+    val banUntil: String? = null,
+    val theme: String = "dark",
+    val avatar: String? = null,
+    val wins: Int = 0,
+    val losses: Int = 0,
+    val gamesPlayed: Int = 0,
+    val createdAt: String = ""
 )
 
 data class AuthResponse(
