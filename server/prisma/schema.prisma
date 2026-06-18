@@ -34,6 +34,7 @@ model Room {
   mafiaCount   Int      @default(0)
   commissionerCount Int @default(1)
   doctorCount  Int      @default(1)
+  donCount     Int      @default(0)
   createdAt    DateTime @default(now())
   players      Player[]
 }

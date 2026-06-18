@@ -134,4 +134,4 @@ fun GameScreen(user: User, token: String, roomId: String, onLeave: () -> Unit, o
             if (actionMade && phase != "ended") { Spacer(modifier = Modifier.height(8.dp)); Text("Ожидание...", color = TextMuted, modifier = Modifier.fillMaxWidth(), textAlign = androidx.compose.ui.text.style.TextAlign.Center) }
         }
     }
-}
+}}

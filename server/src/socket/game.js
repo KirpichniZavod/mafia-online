@@ -250,6 +250,37 @@ function gameHandler(io, socket, prisma) {
     }
   });
 
+  socket.on('don-check', async (data, callback) => {
+    try {
+      const { roomId, targetId: rawTargetId } = data;
+      const targetId = parseInt(rawTargetId);
+      const rid = parseInt(roomId);
+      const game = games.get(rid);
+      if (!game || game.phase !== 'night') return callback({ error: 'Not night' });
+
+      const player = await prisma.player.findFirst({
+        where: { userId: uid(), roomId: rid, role: 'don', isAlive: true }
+      });
+      if (!player) return callback({ error: 'Not don' });
+
+      const target = await prisma.player.findFirst({
+        where: { userId: targetId, roomId: rid }
+      });
+      if (!target) return callback({ error: 'Target not found' });
+
+      const isSheriff = target.role === 'commissioner';
+      socket.emit('don-check-result', { targetId, isSheriff });
+
+      game.nightActions[uid()] = { type: 'don-check', targetId };
+      game.nightPlayers.add(uid());
+
+      callback({ success: true });
+      checkNightComplete(io, rid, game);
+    } catch (error) {
+      callback({ error: 'Failed' });
+    }
+  });
+
   socket.on('day-vote', async (data, callback) => {
     try {
       const { roomId, targetId: rawTargetId } = data;
@@ -351,6 +382,7 @@ async function checkNightComplete(io, roomId, game) {
   if ((room.mafiaCount || 1) > 0) allRoles.push('mafia');
   if ((room.commissionerCount || 1) > 0) allRoles.push('commissioner');
   if ((room.doctorCount || 1) > 0) allRoles.push('doctor');
+  if ((room.donCount || 0) > 0) allRoles.push('don');
 
   const allActed = allRoles.every(r => actedRoles.has(r));
 
@@ -615,11 +647,13 @@ function assignRoles(playerCount, room) {
   const mCount = room.mafiaCount || Math.floor(playerCount / 4) || 1;
   const cCount = room.commissionerCount || 1;
   const dCount = room.doctorCount || 1;
+  const dnCount = room.donCount || 0;
   const roles = [];
 
   for (let i = 0; i < mCount; i++) roles.push('mafia');
   for (let i = 0; i < cCount; i++) roles.push('commissioner');
   for (let i = 0; i < dCount; i++) roles.push('doctor');
+  for (let i = 0; i < dnCount; i++) roles.push('don');
   while (roles.length < playerCount) roles.push('civilian');
 
   for (let i = roles.length - 1; i > 0; i--) {

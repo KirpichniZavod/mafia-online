@@ -9,7 +9,7 @@ function roomHandler(io, socket, db) {
 
   socket.on('create-room', async (data, callback) => {
     try {
-      const { name, maxPlayers = 10, mafiaCount = 0, commissionerCount = 1, doctorCount = 1 } = data;
+      const { name, maxPlayers = 10, mafiaCount = 0, commissionerCount = 1, doctorCount = 1, donCount = 0 } = data;
 
       if (!name || name.length < 1 || name.length > 30) {
         return callback({ error: 'Room name must be 1-30 characters' });
@@ -27,6 +27,7 @@ function roomHandler(io, socket, db) {
       const mc = parseInt(mafiaCount) || 0;
       const cc = parseInt(commissionerCount) || 1;
       const dc = parseInt(doctorCount) || 1;
+      const dn = parseInt(donCount) || 0;
 
       const room = await db.room.create({
         data: {
@@ -36,7 +37,8 @@ function roomHandler(io, socket, db) {
           status: 'waiting',
           mafiaCount: mc,
           commissionerCount: cc,
-          doctorCount: dc
+          doctorCount: dc,
+          donCount: dn
         }
       });
 
@@ -48,7 +50,7 @@ function roomHandler(io, socket, db) {
 
       activeRooms.set(room.id, { players: [uid()], host: uid() });
 
-      log.room.create(socket.user.nickname, room.id, name, { maxPlayers: mp, mafiaCount: mc, commissionerCount: cc, doctorCount: dc });
+      log.room.create(socket.user.nickname, room.id, name, { maxPlayers: mp, mafiaCount: mc, commissionerCount: cc, doctorCount: dc, donCount: dn });
 
       callback({ success: true, roomId: room.id });
       io.emit('room-created', { roomId: room.id, name: name, host: socket.user.nickname });
