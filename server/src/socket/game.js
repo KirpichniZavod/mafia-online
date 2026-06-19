@@ -650,7 +650,7 @@ async function endGame(io, roomId, winner, players) {
 }
 
 function assignRoles(playerCount, room) {
-  const mCount = room.mafiaCount || Math.floor(playerCount / 4) || 1;
+  const mCount = Math.max(room.mafiaCount || Math.floor(playerCount / 4) || 1, 1);
   const cCount = room.commissionerCount || 1;
   const dCount = room.doctorCount || 1;
   const dnCount = room.donCount || 0;

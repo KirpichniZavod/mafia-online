@@ -46,14 +46,52 @@ function socketHandler(io) {
   io.on('connection', (socket) => {
     log.socketConnect(socket, socket.handshake);
 
-    socket.on('disconnect', (reason) => {
+    socket.on('disconnect', async (reason) => {
       log.socketDisconnect(socket, reason);
+
+      try {
+        const playerRooms = await prisma.player.findMany({
+          where: { userId: parseInt(socket.user.id) },
+          include: { room: true }
+        });
+
+        for (const player of playerRooms) {
+          if (player.room.status === 'waiting') {
+            await prisma.player.delete({ where: { id: player.id } });
+
+            const remainingPlayers = await prisma.player.findMany({
+              where: { roomId: player.roomId },
+              include: { user: { select: { id: true, nickname: true, avatar: true } } }
+            });
+
+            if (remainingPlayers.length === 0) {
+              await prisma.room.delete({ where: { id: player.roomId } });
+              io.emit('room-deleted', { roomId: player.roomId });
+              log.room.delete(player.roomId);
+            } else {
+              const newHost = remainingPlayers[0];
+              if (player.room.hostId === parseInt(socket.user.id)) {
+                await prisma.room.update({
+                  where: { id: player.roomId },
+                  data: { hostId: newHost.userId }
+                });
+              }
+              const playerList = remainingPlayers.map(p => ({
+                id: p.user.id, nickname: p.user.nickname, avatar: p.user.avatar,
+                isHost: p.userId === newHost.userId || p.userId === player.room.hostId
+              }));
+              io.to('room:' + player.roomId).emit('room-updated', { roomId: player.roomId, players: playerList });
+            }
+          }
+        }
+      } catch (e) {
+        log.log('socket', log.ICONS.error, 'Disconnect cleanup error: ' + e.message);
+      }
     });
 
     socket.on('join-socket-room', (data) => {
       const roomId = parseInt(data.roomId);
       socket.join('room:' + roomId);
-      log.log('socket', log.ICONS.room, socket.user.nickname + ' joined socket room #' + roomId);
     });
 
     roomHandler(io, socket, prisma);
