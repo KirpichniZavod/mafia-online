@@ -15,12 +15,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.mafia.online.data.model.Room
 import com.mafia.online.data.model.User
 import com.mafia.online.data.socket.SocketManager
@@ -28,11 +22,7 @@ import com.mafia.online.ui.theme.*
 import org.json.JSONObject
 
 @Composable
-fun LobbyScreen(
-    user: User,
-    token: String,
-    onJoinRoom: (Int) -> Unit
-) {
+fun LobbyScreen(user: User, token: String, onJoinRoom: (Int) -> Unit) {
     val socketManager = remember { SocketManager() }
     var rooms by remember { mutableStateOf(listOf<Room>()) }
     var showCreateDialog by remember { mutableStateOf(false) }
@@ -44,12 +34,7 @@ fun LobbyScreen(
             val list = mutableListOf<Room>()
             for (i in 0 until arr.length()) {
                 val obj = arr.getJSONObject(i)
-                list.add(Room(
-                    id = obj.getInt("id"),
-                    name = obj.getString("name"),
-                    players = obj.getInt("players"),
-                    maxPlayers = obj.getInt("maxPlayers")
-                ))
+                list.add(Room(obj.getInt("id"), obj.getString("name"), obj.getInt("players"), obj.getInt("maxPlayers")))
             }
             rooms = list
         }
@@ -97,11 +82,16 @@ fun LobbyScreen(
             text = {
                 Column {
                     OutlinedTextField(value = dlgName, onValueChange = { dlgName = it }, label = { Text("Название") }, modifier = Modifier.fillMaxWidth())
-                    Text("Макс: $dlgMax", color = TextSecondary); Slider(dlgMax.toFloat(), { dlgMax = it.toInt() }, valueRange = 5f..10f, colors = SliderDefaults.colors(thumbColor = AccentPrimary, activeTrackColor = AccentPrimary))
-                    Text("Мафия: $dlgMafia", color = TextSecondary); Slider(dlgMafia.toFloat(), { dlgMafia = it.toInt() }, valueRange = 1f..(dlgMax/3).toFloat(), colors = SliderDefaults.colors(thumbColor = Danger, activeTrackColor = Danger))
-                    Text("Шериф: $dlgSheriff", color = TextSecondary); Slider(dlgSheriff.toFloat(), { dlgSheriff = it.toInt() }, valueRange = 0f..3f, colors = SliderDefaults.colors(thumbColor = Warning, activeTrackColor = Warning))
-                    Text("Врач: $dlgDoctor", color = TextSecondary); Slider(dlgDoctor.toFloat(), { dlgDoctor = it.toInt() }, valueRange = 0f..3f, colors = SliderDefaults.colors(thumbColor = Success, activeTrackColor = Success))
-                    Text("Дон: $dlgDon", color = TextSecondary); Slider(dlgDon.toFloat(), { dlgDon = it.toInt() }, valueRange = 0f..2f, colors = SliderDefaults.colors(thumbColor = Color(0xFF8B4513), activeTrackColor = Color(0xFF8B4513)))
+                    Text("Макс: $dlgMax", color = TextSecondary)
+                    Slider(dlgMax.toFloat(), { dlgMax = it.toInt() }, valueRange = 5f..10f, colors = SliderDefaults.colors(thumbColor = AccentPrimary, activeTrackColor = AccentPrimary))
+                    Text("Мафия: $dlgMafia", color = TextSecondary)
+                    Slider(dlgMafia.toFloat(), { dlgMafia = it.toInt() }, valueRange = 1f..(dlgMax/3).toFloat(), colors = SliderDefaults.colors(thumbColor = Danger, activeTrackColor = Danger))
+                    Text("Шериф: $dlgSheriff", color = TextSecondary)
+                    Slider(dlgSheriff.toFloat(), { dlgSheriff = it.toInt() }, valueRange = 0f..3f, colors = SliderDefaults.colors(thumbColor = Warning, activeTrackColor = Warning))
+                    Text("Врач: $dlgDoctor", color = TextSecondary)
+                    Slider(dlgDoctor.toFloat(), { dlgDoctor = it.toInt() }, valueRange = 0f..3f, colors = SliderDefaults.colors(thumbColor = Success, activeTrackColor = Success))
+                    Text("Дон: $dlgDon", color = TextSecondary)
+                    Slider(dlgDon.toFloat(), { dlgDon = it.toInt() }, valueRange = 0f..2f, colors = SliderDefaults.colors(thumbColor = Color(0xFF8B4513), activeTrackColor = Color(0xFF8B4513)))
                 }
             },
             confirmButton = {
