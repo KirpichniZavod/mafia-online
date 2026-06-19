@@ -11,7 +11,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -27,90 +26,157 @@ fun LobbyScreen(user: User, token: String, onJoinRoom: (Int) -> Unit) {
     var rooms by remember { mutableStateOf(listOf<Room>()) }
     var showCreateDialog by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf("") }
+    var connected by remember { mutableStateOf(false) }
 
-    fun parseRooms(response: JSONObject) {
-        val arr = response.optJSONArray("rooms")
-        if (arr != null) {
-            val list = mutableListOf<Room>()
-            for (i in 0 until arr.length()) {
-                val obj = arr.getJSONObject(i)
-                list.add(Room(obj.getInt("id"), obj.getString("name"), obj.getInt("players"), obj.getInt("maxPlayers")))
+    LaunchedEffect(token) {
+        socketManager.connect("https://mafia-server-eljy.onrender.com", token)
+        socketManager.onConnect { connected = true }
+        socketManager.onDisconnect { connected = false }
+
+        socketManager.on("room-created") {
+            socketManager.emit("get-rooms", JSONObject()) { response ->
+                parseRooms(response)?.let { rooms = it }
             }
-            rooms = list
+        }
+        socketManager.on("room-deleted") {
+            socketManager.emit("get-rooms", JSONObject()) { response ->
+                parseRooms(response)?.let { rooms = it }
+            }
+        }
+
+        socketManager.emit("get-rooms", JSONObject()) { response ->
+            parseRooms(response)?.let { rooms = it }
         }
     }
 
-    LaunchedEffect(Unit) {
-        socketManager.connect("https://mafia-server-eljy.onrender.com", token)
-        socketManager.on("room-created") { socketManager.emit("get-rooms", JSONObject(), ::parseRooms) }
-        socketManager.on("room-deleted") { socketManager.emit("get-rooms", JSONObject(), ::parseRooms) }
-        socketManager.emit("get-rooms", JSONObject(), ::parseRooms)
+    DisposableEffect(Unit) {
+        onDispose { socketManager.disconnect() }
     }
-
-    DisposableEffect(Unit) { onDispose { socketManager.disconnect() } }
 
     Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(BackgroundDark, SurfaceDark)))) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text("Лобби", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
-                Button(onClick = { showCreateDialog = true }, colors = ButtonDefaults.buttonColors(containerColor = AccentPrimary)) { Text("Создать комнату") }
+                Column {
+                    Text("Привет, ${user.nickname}", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                    if (!connected) Text("Подключение...", color = Warning, fontSize = 12.sp)
+                    else Text("Онлайн", color = Success, fontSize = 12.sp)
+                }
+                Button(onClick = { showCreateDialog = true }, colors = ButtonDefaults.buttonColors(containerColor = AccentPrimary)) {
+                    Text("Создать комнату")
+                }
             }
             Spacer(modifier = Modifier.height(16.dp))
-            if (error.isNotEmpty()) Text(error, color = Danger)
+            if (error.isNotEmpty()) {
+                Card(colors = CardDefaults.cardColors(containerColor = Danger.copy(alpha = 0.2f))) {
+                    Text(error, modifier = Modifier.padding(12.dp), color = Danger)
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+            }
             Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = CardDark)) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text("Доступные комнаты", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                    Text("Комнаты", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
                     Spacer(modifier = Modifier.height(12.dp))
-                    if (rooms.isEmpty()) Text("Нет доступных комнат", color = TextMuted)
-                    else LazyColumn { items(rooms) { room -> RoomCard(room) { socketManager.emit("join-room", JSONObject().put("roomId", room.id)) { if (it.optBoolean("success")) onJoinRoom(room.id) else error = it.optString("error", "Ошибка") } } } }
+                    if (rooms.isEmpty()) {
+                        Text("Нет комнат. Создайте первую!", color = TextMuted)
+                    } else {
+                        LazyColumn {
+                            items(rooms) { room ->
+                                RoomCard(room) {
+                                    socketManager.emit("join-room", JSONObject().put("roomId", room.id)) { response ->
+                                        if (response.optBoolean("success")) {
+                                            onJoinRoom(room.id)
+                                        } else {
+                                            error = response.optString("error", "Ошибка")
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
     }
 
     if (showCreateDialog) {
-        var dlgName by remember { mutableStateOf("") }
-        var dlgMax by remember { mutableStateOf(10) }
-        var dlgMafia by remember { mutableStateOf(1) }
-        var dlgSheriff by remember { mutableStateOf(1) }
-        var dlgDoctor by remember { mutableStateOf(1) }
-        var dlgDon by remember { mutableStateOf(0) }
-
-        AlertDialog(
-            onDismissRequest = { showCreateDialog = false },
-            title = { Text("Новая комната") },
-            text = {
-                Column {
-                    OutlinedTextField(value = dlgName, onValueChange = { dlgName = it }, label = { Text("Название") }, modifier = Modifier.fillMaxWidth())
-                    Text("Макс: $dlgMax", color = TextSecondary)
-                    Slider(dlgMax.toFloat(), { dlgMax = it.toInt() }, valueRange = 5f..10f, colors = SliderDefaults.colors(thumbColor = AccentPrimary, activeTrackColor = AccentPrimary))
-                    Text("Мафия: $dlgMafia", color = TextSecondary)
-                    Slider(dlgMafia.toFloat(), { dlgMafia = it.toInt() }, valueRange = 1f..(dlgMax/3).toFloat(), colors = SliderDefaults.colors(thumbColor = Danger, activeTrackColor = Danger))
-                    Text("Шериф: $dlgSheriff", color = TextSecondary)
-                    Slider(dlgSheriff.toFloat(), { dlgSheriff = it.toInt() }, valueRange = 0f..3f, colors = SliderDefaults.colors(thumbColor = Warning, activeTrackColor = Warning))
-                    Text("Врач: $dlgDoctor", color = TextSecondary)
-                    Slider(dlgDoctor.toFloat(), { dlgDoctor = it.toInt() }, valueRange = 0f..3f, colors = SliderDefaults.colors(thumbColor = Success, activeTrackColor = Success))
-                    Text("Дон: $dlgDon", color = TextSecondary)
-                    Slider(dlgDon.toFloat(), { dlgDon = it.toInt() }, valueRange = 0f..2f, colors = SliderDefaults.colors(thumbColor = Color(0xFF8B4513), activeTrackColor = Color(0xFF8B4513)))
-                }
-            },
-            confirmButton = {
-                Button(onClick = {
-                    showCreateDialog = false
-                    socketManager.emit("create-room", JSONObject().put("name", dlgName).put("maxPlayers", dlgMax).put("mafiaCount", dlgMafia).put("commissionerCount", dlgSheriff).put("doctorCount", dlgDoctor).put("donCount", dlgDon)) {}
-                }, colors = ButtonDefaults.buttonColors(containerColor = AccentPrimary)) { Text("Создать") }
-            },
-            dismissButton = { TextButton(onClick = { showCreateDialog = false }) { Text("Отмена", color = TextSecondary) } }
+        CreateRoomDialog(
+            socketManager = socketManager,
+            onDismiss = { showCreateDialog = false },
+            onError = { error = it; showCreateDialog = false }
         )
     }
+}
+
+private fun parseRooms(response: JSONObject): List<Room>? {
+    val arr = response.optJSONArray("rooms") ?: return null
+    val list = mutableListOf<Room>()
+    for (i in 0 until arr.length()) {
+        val obj = arr.getJSONObject(i)
+        list.add(Room(obj.getInt("id"), obj.getString("name"), obj.getInt("players"), obj.getInt("maxPlayers")))
+    }
+    return list
 }
 
 @Composable
 fun RoomCard(room: Room, onJoin: () -> Unit) {
     Card(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp).clickable(onClick = onJoin), colors = CardDefaults.cardColors(containerColor = SurfaceDark)) {
         Row(modifier = Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            Column { Text(room.name, fontWeight = FontWeight.Bold, color = TextPrimary); Text("${room.players}/${room.maxPlayers}", color = TextSecondary, fontSize = 14.sp) }
+            Column {
+                Text(room.name, fontWeight = FontWeight.Bold, color = TextPrimary)
+                Text("${room.players}/${room.maxPlayers} игроков", color = TextSecondary, fontSize = 14.sp)
+            }
             Button(onClick = onJoin, colors = ButtonDefaults.buttonColors(containerColor = AccentSecondary)) { Text("Войти") }
         }
     }
+}
+
+@Composable
+fun CreateRoomDialog(socketManager: SocketManager, onDismiss: () -> Unit, onError: (String) -> Unit) {
+    var name by remember { mutableStateOf("") }
+    var maxPlayers by remember { mutableStateOf(10) }
+    var mafia by remember { mutableStateOf(1) }
+    var sheriff by remember { mutableStateOf(1) }
+    var doctor by remember { mutableStateOf(1) }
+    var don by remember { mutableStateOf(0) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Новая комната") },
+        text = {
+            Column {
+                OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Название") }, modifier = Modifier.fillMaxWidth())
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("Макс: $maxPlayers", color = TextSecondary)
+                Slider(maxPlayers.toFloat(), { maxPlayers = it.toInt() }, valueRange = 5f..10f, colors = SliderDefaults.colors(thumbColor = AccentPrimary, activeTrackColor = AccentPrimary))
+                Text("Мафия: $mafia", color = TextSecondary)
+                Slider(mafia.toFloat(), { mafia = it.toInt() }, valueRange = 1f..(maxPlayers / 3).toFloat(), colors = SliderDefaults.colors(thumbColor = Danger, activeTrackColor = Danger))
+                Text("Шериф: $sheriff", color = TextSecondary)
+                Slider(sheriff.toFloat(), { sheriff = it.toInt() }, valueRange = 0f..3f, colors = SliderDefaults.colors(thumbColor = Warning, activeTrackColor = Warning))
+                Text("Врач: $doctor", color = TextSecondary)
+                Slider(doctor.toFloat(), { doctor = it.toInt() }, valueRange = 0f..3f, colors = SliderDefaults.colors(thumbColor = Success, activeTrackColor = Success))
+                Text("Дон: $don", color = TextSecondary)
+                Slider(don.toFloat(), { don = it.toInt() }, valueRange = 0f..2f, colors = SliderDefaults.colors(thumbColor = Color(0xFF8B4513), activeTrackColor = Color(0xFF8B4513)))
+            }
+        },
+        confirmButton = {
+            Button(onClick = {
+                if (name.isBlank()) { onError("Введите название"); return@Button }
+                socketManager.emit("create-room", JSONObject()
+                    .put("name", name)
+                    .put("maxPlayers", maxPlayers)
+                    .put("mafiaCount", mafia)
+                    .put("commissionerCount", sheriff)
+                    .put("doctorCount", doctor)
+                    .put("donCount", don)
+                ) { response ->
+                    if (response.optBoolean("success")) {
+                        onDismiss()
+                    } else {
+                        onError(response.optString("error", "Ошибка"))
+                    }
+                }
+            }, colors = ButtonDefaults.buttonColors(containerColor = AccentPrimary)) { Text("Создать") }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Отмена", color = TextSecondary) } }
+    )
 }

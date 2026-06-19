@@ -32,6 +32,7 @@ fun MafiaNavGraph(startTheme: String, onThemeChange: (String) -> Unit) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val scope = rememberCoroutineScope()
     var showSplash by remember { mutableStateOf(true) }
+    var initialized by remember { mutableStateOf(false) }
 
     val api = remember {
         Retrofit.Builder()
@@ -56,8 +57,12 @@ fun MafiaNavGraph(startTheme: String, onThemeChange: (String) -> Unit) {
                 if (fetchedUser.isBanned) {
                     banInfo = Pair(fetchedUser.banReason, fetchedUser.banUntil)
                 }
-            } catch (_: Exception) {}
+            } catch (_: Exception) {
+                repository.clearToken()
+                token = null
+            }
         }
+        initialized = true
     }
 
     if (showSplash) {
@@ -65,10 +70,17 @@ fun MafiaNavGraph(startTheme: String, onThemeChange: (String) -> Unit) {
         return
     }
 
+    if (!initialized) {
+        Box(modifier = Modifier.fillMaxSize().background(BackgroundDark))
+        return
+    }
+
     if (banInfo != null) {
         BannedScreen(reason = banInfo!!.first, until = banInfo!!.second)
         return
     }
+
+    val startDest = if (user != null) "lobby" else "login"
 
     Scaffold(
         bottomBar = {
@@ -109,7 +121,7 @@ fun MafiaNavGraph(startTheme: String, onThemeChange: (String) -> Unit) {
             }
         }
     ) { padding ->
-        NavHost(navController = navController, startDestination = if (user != null) "lobby" else "login", modifier = Modifier.padding(padding)) {
+        NavHost(navController = navController, startDestination = startDest, modifier = Modifier.padding(padding)) {
             composable("login") {
                 LoginScreen(
                     onLogin = { userData, userToken ->

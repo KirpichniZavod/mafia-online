@@ -8,18 +8,45 @@ import org.json.JSONObject
 import java.net.URI
 
 class SocketManager {
-
     private var socket: Socket? = null
+    private var connectHandler: (() -> Unit)? = null
+    private var disconnectHandler: (() -> Unit)? = null
 
     fun connect(serverUrl: String, token: String) {
-        val uri = URI.create("$serverUrl?token=$token")
-        socket = IO.socket(uri)
-        socket?.connect()
+        try {
+            val uri = URI.create("$serverUrl?token=$token")
+            socket = IO.socket(uri)
+
+            socket?.on(Socket.EVENT_CONNECT) {
+                connectHandler?.invoke()
+            }
+
+            socket?.on(Socket.EVENT_DISCONNECT) {
+                disconnectHandler?.invoke()
+            }
+
+            socket?.on(Socket.EVENT_CONNECT_ERROR) { args ->
+                val error = args.firstOrNull() as? Exception
+                println("Socket error: ${error?.message}")
+            }
+
+            socket?.connect()
+        } catch (e: Exception) {
+            println("Connect error: ${e.message}")
+        }
     }
 
     fun disconnect() {
         socket?.disconnect()
         socket = null
+    }
+
+    fun onConnect(handler: () -> Unit) {
+        connectHandler = handler
+    }
+
+    fun onDisconnect(handler: () -> Unit) {
+        disconnectHandler = handler
     }
 
     fun on(event: String, handler: (JSONObject) -> Unit) {
