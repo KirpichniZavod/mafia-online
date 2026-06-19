@@ -20,17 +20,18 @@ import com.mafia.online.ui.screens.login.LoginScreen
 import com.mafia.online.ui.screens.profile.ProfileScreen
 import com.mafia.online.ui.screens.register.RegisterScreen
 import com.mafia.online.ui.screens.settings.SettingsScreen
+import com.mafia.online.ui.screens.splash.SplashScreen
 import com.mafia.online.ui.theme.*
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import androidx.compose.ui.unit.dp
 
 @Composable
-fun MafiaNavGraph() {
+fun MafiaNavGraph(startTheme: String, onThemeChange: (String) -> Unit) {
     val navController = rememberNavController()
     val context = androidx.compose.ui.platform.LocalContext.current
     val scope = rememberCoroutineScope()
+    var showSplash by remember { mutableStateOf(true) }
 
     val api = remember {
         Retrofit.Builder()
@@ -59,6 +60,11 @@ fun MafiaNavGraph() {
         }
     }
 
+    if (showSplash) {
+        SplashScreen(onFinished = { showSplash = false })
+        return
+    }
+
     if (banInfo != null) {
         BannedScreen(reason = banInfo!!.first, until = banInfo!!.second)
         return
@@ -74,26 +80,14 @@ fun MafiaNavGraph() {
                         label = { Text("Лобби") },
                         selected = currentRoute == "lobby",
                         onClick = { navController.navigate("lobby") { popUpTo("lobby") { inclusive = true } } },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = AccentGlow,
-                            unselectedIconColor = TextMuted,
-                            selectedTextColor = AccentGlow,
-                            unselectedTextColor = TextMuted,
-                            indicatorColor = AccentPrimary.copy(alpha = 0.2f)
-                        )
+                        colors = NavigationBarItemDefaults.colors(selectedIconColor = AccentGlow, unselectedIconColor = TextMuted, selectedTextColor = AccentGlow, unselectedTextColor = TextMuted, indicatorColor = AccentPrimary.copy(alpha = 0.2f))
                     )
                     NavigationBarItem(
                         icon = { Text("👤") },
                         label = { Text("Профиль") },
                         selected = currentRoute == "profile",
                         onClick = { navController.navigate("profile") { popUpTo("lobby") } },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = AccentGlow,
-                            unselectedIconColor = TextMuted,
-                            selectedTextColor = AccentGlow,
-                            unselectedTextColor = TextMuted,
-                            indicatorColor = AccentPrimary.copy(alpha = 0.2f)
-                        )
+                        colors = NavigationBarItemDefaults.colors(selectedIconColor = AccentGlow, unselectedIconColor = TextMuted, selectedTextColor = AccentGlow, unselectedTextColor = TextMuted, indicatorColor = AccentPrimary.copy(alpha = 0.2f))
                     )
                     if (user?.isAdmin == true) {
                         NavigationBarItem(
@@ -101,13 +95,7 @@ fun MafiaNavGraph() {
                             label = { Text("Админ") },
                             selected = currentRoute == "admin",
                             onClick = { navController.navigate("admin") { popUpTo("lobby") } },
-                            colors = NavigationBarItemDefaults.colors(
-                                selectedIconColor = AccentGlow,
-                                unselectedIconColor = TextMuted,
-                                selectedTextColor = AccentGlow,
-                                unselectedTextColor = TextMuted,
-                                indicatorColor = AccentPrimary.copy(alpha = 0.2f)
-                            )
+                            colors = NavigationBarItemDefaults.colors(selectedIconColor = AccentGlow, unselectedIconColor = TextMuted, selectedTextColor = AccentGlow, unselectedTextColor = TextMuted, indicatorColor = AccentPrimary.copy(alpha = 0.2f))
                         )
                     }
                     NavigationBarItem(
@@ -115,23 +103,13 @@ fun MafiaNavGraph() {
                         label = { Text("Настройки") },
                         selected = currentRoute == "settings",
                         onClick = { navController.navigate("settings") { popUpTo("lobby") } },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = AccentGlow,
-                            unselectedIconColor = TextMuted,
-                            selectedTextColor = AccentGlow,
-                            unselectedTextColor = TextMuted,
-                            indicatorColor = AccentPrimary.copy(alpha = 0.2f)
-                        )
+                        colors = NavigationBarItemDefaults.colors(selectedIconColor = AccentGlow, unselectedIconColor = TextMuted, selectedTextColor = AccentGlow, unselectedTextColor = TextMuted, indicatorColor = AccentPrimary.copy(alpha = 0.2f))
                     )
                 }
             }
         }
     ) { padding ->
-        NavHost(
-            navController = navController,
-            startDestination = "login",
-            modifier = Modifier.padding(padding)
-        ) {
+        NavHost(navController = navController, startDestination = if (user != null) "lobby" else "login", modifier = Modifier.padding(padding)) {
             composable("login") {
                 LoginScreen(
                     onLogin = { userData, userToken ->
@@ -149,6 +127,7 @@ fun MafiaNavGraph() {
                     onRegister = { userData, userToken ->
                         user = userData
                         token = userToken
+                        scope.launch { repository.saveToken(userToken) }
                         navController.navigate("lobby") { popUpTo("login") { inclusive = true } }
                     },
                     onBack = { navController.popBackStack() }
@@ -157,56 +136,27 @@ fun MafiaNavGraph() {
 
             composable("lobby") {
                 val currentToken = token ?: return@composable
-                user?.let { u ->
-                    LobbyScreen(
-                        user = u,
-                        token = currentToken,
-                        onJoinRoom = { roomId -> navController.navigate("game/$roomId") }
-                    )
-                }
+                user?.let { u -> LobbyScreen(user = u, token = currentToken, onJoinRoom = { roomId -> navController.navigate("game/$roomId") }) }
             }
 
-            composable(
-                "game/{roomId}",
-                arguments = listOf(navArgument("roomId") { type = NavType.StringType })
-            ) { backStackEntry ->
+            composable("game/{roomId}", arguments = listOf(navArgument("roomId") { type = NavType.StringType })) { backStackEntry ->
                 val roomId = backStackEntry.arguments?.getString("roomId") ?: return@composable
                 val currentToken = token ?: return@composable
-                user?.let { u ->
-                    GameScreen(
-                        user = u,
-                        token = currentToken,
-                        roomId = roomId,
-                        onLeave = { navController.popBackStack() },
-                        onBanned = { reason, until -> banInfo = Pair(reason, until) }
-                    )
-                }
+                user?.let { u -> GameScreen(user = u, token = currentToken, roomId = roomId, onLeave = { navController.popBackStack() }, onBanned = { reason, until -> banInfo = Pair(reason, until) }) }
             }
 
             composable("profile") {
                 val currentToken = token ?: return@composable
-                user?.let { u ->
-                    ProfileScreen(
-                        user = u,
-                        token = currentToken,
-                        onBack = { navController.popBackStack() }
-                    )
-                }
+                user?.let { u -> ProfileScreen(user = u, token = currentToken, onBack = { navController.popBackStack() }) }
             }
 
             composable("admin") {
                 val currentToken = token ?: return@composable
-                user?.let { u ->
-                    AdminScreen(user = u, token = currentToken)
-                }
+                user?.let { u -> AdminScreen(user = u, token = currentToken) }
             }
 
             composable("settings") {
-                SettingsScreen(
-                    currentTheme = "dark",
-                    onThemeChange = { /* TODO: save theme */ },
-                    onBack = { navController.popBackStack() }
-                )
+                SettingsScreen(currentTheme = startTheme, onThemeChange = onThemeChange, onBack = { navController.popBackStack() })
             }
         }
     }

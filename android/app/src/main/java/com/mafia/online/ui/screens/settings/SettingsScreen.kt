@@ -15,14 +15,8 @@ import androidx.compose.ui.unit.sp
 import com.mafia.online.ui.theme.*
 
 @Composable
-fun SettingsScreen(
-    currentTheme: String,
-    onThemeChange: (String) -> Unit,
-    onBack: () -> Unit
-) {
-    Column(
-        modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(BackgroundDark, SurfaceDark))).padding(16.dp)
-    ) {
+fun SettingsScreen(currentTheme: String, onThemeChange: (String) -> Unit, onBack: () -> Unit) {
+    Column(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(BackgroundDark, SurfaceDark))).padding(16.dp)) {
         Text("Настройки", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -34,6 +28,20 @@ fun SettingsScreen(
                     ThemeButton("🌙 Тёмная", "dark", currentTheme, onThemeChange)
                     ThemeButton("☀️ Светлая", "light", currentTheme, onThemeChange)
                     ThemeButton("🍋 Лимонная", "lemon", currentTheme, onThemeChange)
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Card(colors = CardDefaults.cardColors(containerColor = CardDark)) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text("Звук", fontWeight = FontWeight.Bold, color = TextPrimary)
+                Spacer(modifier = Modifier.height(8.dp))
+                var soundEnabled by remember { mutableStateOf(true) }
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Text("Звуковые эффекты", color = TextSecondary)
+                    Switch(checked = soundEnabled, onCheckedChange = { soundEnabled = it }, colors = SwitchDefaults.colors(checkedThumbColor = AccentPrimary, checkedTrackColor = AccentPrimary.copy(alpha = 0.5f)))
                 }
             }
         }
@@ -56,11 +64,7 @@ fun ThemeButton(label: String, theme: String, currentTheme: String, onThemeChang
     val isSelected = currentTheme == theme
     Button(
         onClick = { onThemeChange(theme) },
-        colors = ButtonDefaults.buttonColors(
-            containerColor = if (isSelected) AccentPrimary else SurfaceDark
-        ),
+        colors = ButtonDefaults.buttonColors(containerColor = if (isSelected) AccentPrimary else SurfaceDark),
         shape = RoundedCornerShape(12.dp)
-    ) {
-        Text(label, color = if (isSelected) TextPrimary else TextMuted)
-    }
+    ) { Text(label, color = if (isSelected) TextPrimary else TextMuted) }
 }
